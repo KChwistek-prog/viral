@@ -8,6 +8,8 @@ import java.util.List;
 public interface AdminService {
     String login(LoginDto loginDto);
 
+    Admin getUser();
+
     Admin saveAdmin(Admin admin);
 
     List<Admin> fetchAdminList();

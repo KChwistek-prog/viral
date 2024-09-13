@@ -8,10 +8,12 @@ import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+
 @Component
 public class AdminServiceImpl implements AdminService {
 
@@ -39,8 +41,14 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    public Admin getUser() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return adminRepository.findByUserName(userDetails.getUsername());
+    }
+
+    @Override
     public Admin saveAdmin(Admin admin) {
-        return null;
+        return adminRepository.save(admin);
     }
 
 

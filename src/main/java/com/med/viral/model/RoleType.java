@@ -4,10 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum RoleType {
-    PATIENT("ROLE_PATIENT"),
+    ADMIN("ROLE_ADMIN"),
     DOCTOR("ROLE_DOCTOR"),
-    ADMIN("ROLE_ADMIN");
-    private String value;
+    PATIENT("ROLE_PATIENT");
+
+    private final String value;
 
     RoleType(String value) {
         this.value = value;

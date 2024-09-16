@@ -1,17 +1,51 @@
 package com.med.viral.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-@Data
-@Entity
-public class Role {
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Integer id;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-    @Enumerated(EnumType.STRING)
-    private RoleType role;
+import static com.med.viral.model.Permission.*;
 
-    private String description;
+@RequiredArgsConstructor
+public enum Role {
+
+    USER(Collections.emptySet()),
+    ADMIN(
+            Set.of(ADMIN_READ,
+                    ADMIN_UPDATE,
+                    ADMIN_DELETE,
+                    ADMIN_CREATE,
+                    DOCTOR_READ,
+                    DOCTOR_UPDATE,
+                    DOCTOR_DELETE,
+                    DOCTOR_CREATE)),
+    DOCTOR(
+            Set.of(DOCTOR_READ,
+                    DOCTOR_UPDATE,
+                    DOCTOR_DELETE,
+                    DOCTOR_CREATE)),
+    PATIENT(
+            Set.of(PATIENT_READ,
+                    PATIENT_UPDATE,
+                    PATIENT_DELETE,
+                    PATIENT_CREATE));
+
+    private final Set<Permission> permissions;
+
+    public Set<Permission> getPermissions() {
+        return permissions;
+    }
+
+    public List<SimpleGrantedAuthority> getAuthorities() {
+        var authorities = getPermissions()
+                .stream()
+                .map(permission -> new SimpleGrantedAuthority(getPermissions().toString()))
+                .collect(Collectors.toList());
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + this.name()));
+        return authorities;
+    }
 }

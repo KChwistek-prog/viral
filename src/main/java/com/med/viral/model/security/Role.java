@@ -1,4 +1,4 @@
-package com.med.viral.model;
+package com.med.viral.model.security;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.med.viral.model.Permission.*;
+import static com.med.viral.model.security.Permission.*;
 
 @RequiredArgsConstructor
 public enum Role {

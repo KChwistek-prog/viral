@@ -1,4 +1,4 @@
-package com.med.viral.model;
+package com.med.viral.model.security;
 
 import lombok.Getter;
 

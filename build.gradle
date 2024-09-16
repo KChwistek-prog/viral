@@ -28,6 +28,7 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.5'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'io.swagger.core.v3:swagger-core:2.2.21'
 }
 
 tasks.named('test') {

@@ -1,5 +1,7 @@
 package com.med.viral.model;
 
+import com.med.viral.model.security.Role;
+import com.med.viral.model.security.Token;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

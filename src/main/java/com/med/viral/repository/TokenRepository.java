@@ -1,6 +1,6 @@
 package com.med.viral.repository;
 
-import com.med.viral.model.Token;
+import com.med.viral.model.security.Token;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 

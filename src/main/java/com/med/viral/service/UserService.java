@@ -1,9 +1,8 @@
 package com.med.viral.service;
 
 import com.med.viral.model.User;
+import com.med.viral.model.security.ChangePasswordRequest;
 import com.med.viral.repository.UserRepository;
-import com.med.viral.security.ChangePasswordRequest;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,14 +26,14 @@ public class UserService {
 
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
 
-        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new IllegalStateException("Wrong password");
         }
-        if (!request.getNewPassword().equals(request.getConfirmationPassword())) {
+        if (!request.newPassword().equals(request.confirmationPassword())) {
             throw new IllegalStateException("Password are not the same");
         }
 
-        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
         repository.save(user);
     }
 }

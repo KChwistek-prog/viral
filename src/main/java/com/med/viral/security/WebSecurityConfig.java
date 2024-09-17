@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import static com.med.viral.model.security.Permission.*;
 import static com.med.viral.model.security.Role.ADMIN;
 import static com.med.viral.model.security.Role.DOCTOR;
+import static com.med.viral.model.security.Role.PATIENT;
 import static org.springframework.http.HttpMethod.*;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -48,7 +49,8 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(req ->
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
-                                .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), DOCTOR.name())
+                                .requestMatchers("/patient/**").hasAnyRole(PATIENT.name())
+                                .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), DOCTOR.name(), PATIENT.name())
                                 .requestMatchers(GET, "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(), DOCTOR_READ.name())
                                 .requestMatchers(POST, "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(), DOCTOR_CREATE.name())
                                 .requestMatchers(PUT, "/api/v1/management/**").hasAnyAuthority(ADMIN_UPDATE.name(), DOCTOR_UPDATE.name())

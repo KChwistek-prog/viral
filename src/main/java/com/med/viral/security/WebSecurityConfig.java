@@ -50,6 +50,7 @@ public class WebSecurityConfig {
                         req.requestMatchers(WHITE_LIST_URL)
                                 .permitAll()
                                 .requestMatchers("/patient/**").hasAnyRole(PATIENT.name())
+                                .requestMatchers("/doctor/**").hasAnyRole(DOCTOR.name())
                                 .requestMatchers("/api/v1/management/**").hasAnyRole(ADMIN.name(), DOCTOR.name(), PATIENT.name())
                                 .requestMatchers(GET, "/api/v1/management/**").hasAnyAuthority(ADMIN_READ.name(), DOCTOR_READ.name())
                                 .requestMatchers(POST, "/api/v1/management/**").hasAnyAuthority(ADMIN_CREATE.name(), DOCTOR_CREATE.name())

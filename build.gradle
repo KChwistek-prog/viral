@@ -29,6 +29,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'io.swagger.core.v3:swagger-core:2.2.21'
+    implementation 'org.mapstruct:mapstruct:1.6.2'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
 }
 
 tasks.named('test') {

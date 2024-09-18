@@ -1,8 +1,5 @@
 package com.med.viral.model.security;
 
-import lombok.Getter;
-
-@Getter
 public enum RoleType {
     ADMIN("ROLE_ADMIN"),
     DOCTOR("ROLE_DOCTOR"),
@@ -14,4 +11,7 @@ public enum RoleType {
         this.value = value;
     }
 
+    public String getValue() {
+        return value;
+    }
 }

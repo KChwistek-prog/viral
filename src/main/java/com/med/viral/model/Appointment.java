@@ -18,4 +18,5 @@ public class Appointment {
     private  Integer patient_id;
     private  Integer doctor_id;
     private  Date date;
+    private  AppointmentStatus status;
 }

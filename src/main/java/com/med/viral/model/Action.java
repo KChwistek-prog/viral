@@ -7,6 +7,8 @@ import lombok.Data;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 
+import java.util.UUID;
+
 @Data
 @Entity
 public class Action {
@@ -14,7 +16,7 @@ public class Action {
     @Id
     private Integer id;
     @CreatedBy
-    private String createdBy;
+    private Integer createdBy;
     @CreatedDate
     private String createdDate;
     @Enumerated

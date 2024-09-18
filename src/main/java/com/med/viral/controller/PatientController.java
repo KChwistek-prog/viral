@@ -1,6 +1,7 @@
 package com.med.viral.controller;
 
 import com.med.viral.model.Appointment;
+import com.med.viral.model.AppointmentStatus;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,12 +32,16 @@ public class PatientController {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var user = repository.findByEmail(loggedUser.getUsername()).orElseThrow();
         var doctor = repository.findById(docId).orElseThrow();
-        Appointment newAppointment = Appointment.builder()
-                .patient_id(user.getId())
-                .doctor_id(doctor.getId())
-                .date(new Date())
-                .build();
-        return ResponseEntity.ok(appointmentRepository.save(newAppointment));
+        Appointment newAppointment = null;
+        if (user.isAccountNonLocked()) {
+            Appointment.builder()
+                    .patient_id(user.getId())
+                    .doctor_id(doctor.getId())
+                    .date(new Date())
+                    .status(AppointmentStatus.OPEN)
+                    .build();
+            return ResponseEntity.ok(appointmentRepository.save(newAppointment));
+        } else return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/deleteAppointment/{id}")

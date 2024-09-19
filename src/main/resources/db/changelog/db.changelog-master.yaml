@@ -1,0 +1,272 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1726747097497-1
+      author: kchwi (generated)
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: age
+                  type: SMALLINT
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: _user_pkey
+                  name: id
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: is_account_non_locked
+                  type: BOOLEAN
+              - column:
+                  name: pesel
+                  type: INTEGER
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+              - column:
+                  name: firstname
+                  type: VARCHAR(255)
+              - column:
+                  name: lastname
+                  type: VARCHAR(255)
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+              - column:
+                  name: role
+                  type: VARCHAR(255)
+              - column:
+                  name: specialization
+                  type: VARCHAR(255)
+              - column:
+                  name: username
+                  type: VARCHAR(255)
+            tableName: _user
+  - changeSet:
+      id: 1726747097497-2
+      author: kchwi (generated)
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: action_type
+                  type: SMALLINT
+              - column:
+                  name: created_by
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: action_pkey
+                  name: id
+                  type: INTEGER
+              - column:
+                  name: created_date
+                  type: VARCHAR(255)
+              - column:
+                  name: field_name
+                  type: VARCHAR(255)
+              - column:
+                  name: new_version
+                  type: VARCHAR(255)
+              - column:
+                  name: old_version
+                  type: VARCHAR(255)
+            tableName: action
+  - changeSet:
+      id: 1726747097497-3
+      author: kchwi (generated)
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  name: doctor_id
+                  type: INTEGER
+              - column:
+                  name: patient_id
+                  type: INTEGER
+              - column:
+                  name: status
+                  type: SMALLINT
+              - column:
+                  name: date
+                  type: TIMESTAMP WITHOUT TIME ZONE
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: appointment_pkey
+                  name: id
+                  type: BIGINT
+            tableName: appointment
+  - changeSet:
+      id: 1726747097497-4
+      author: kchwi (generated)
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: expired
+                  type: BOOLEAN
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: token_pkey
+                  name: id
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: revoked
+                  type: BOOLEAN
+              - column:
+                  name: user_id
+                  type: INTEGER
+              - column:
+                  name: token
+                  type: VARCHAR(255)
+              - column:
+                  name: token_type
+                  type: VARCHAR(255)
+            tableName: token
+  - changeSet:
+      id: 1726747097497-5
+      author: kchwi (generated)
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                  name: user_id
+                  type: INTEGER
+              - column:
+                  constraints:
+                    nullable: false
+                  name: appointment_id
+                  type: BIGINT
+            tableName: _user_appointment
+  - changeSet:
+      id: 1726747097497-6
+      author: kchwi (generated)
+      changes:
+        - addUniqueConstraint:
+            columnNames: email
+            constraintName: _user_email_key
+            tableName: _user
+  - changeSet:
+      id: 1726747097497-7
+      author: kchwi (generated)
+      changes:
+        - addUniqueConstraint:
+            columnNames: username
+            constraintName: _user_username_key
+            tableName: _user
+  - changeSet:
+      id: 1726747097497-8
+      author: kchwi (generated)
+      changes:
+        - addUniqueConstraint:
+            columnNames: token
+            constraintName: token_token_key
+            tableName: token
+  - changeSet:
+      id: 1726747097497-9
+      author: kchwi (generated)
+      changes:
+        - addUniqueConstraint:
+            columnNames: appointment_id
+            constraintName: _user_appointment_appointment_id_key
+            tableName: _user_appointment
+  - changeSet:
+      id: 1726747097497-10
+      author: kchwi (generated)
+      changes:
+        - createSequence:
+            cacheSize: 1
+            cycle: false
+            dataType: bigint
+            incrementBy: 50
+            maxValue: 9223372036854775807
+            minValue: 1
+            sequenceName: _user_seq
+            startValue: 1
+  - changeSet:
+      id: 1726747097497-11
+      author: kchwi (generated)
+      changes:
+        - createSequence:
+            cacheSize: 1
+            cycle: false
+            dataType: bigint
+            incrementBy: 50
+            maxValue: 9223372036854775807
+            minValue: 1
+            sequenceName: appointment_seq
+            startValue: 1
+  - changeSet:
+      id: 1726747097497-12
+      author: kchwi (generated)
+      changes:
+        - createSequence:
+            cacheSize: 1
+            cycle: false
+            dataType: bigint
+            incrementBy: 50
+            maxValue: 9223372036854775807
+            minValue: 1
+            sequenceName: token_seq
+            startValue: 1
+  - changeSet:
+      id: 1726747097497-13
+      author: kchwi (generated)
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: _user_appointment
+            constraintName: fkb33uhrts8up8ukmn4u4kxl2hj
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: id
+            referencedTableName: _user
+            validate: true
+  - changeSet:
+      id: 1726747097497-14
+      author: kchwi (generated)
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: appointment_id
+            baseTableName: _user_appointment
+            constraintName: fkhws33nkgw32w21y2uu593jeo6
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: id
+            referencedTableName: appointment
+            validate: true
+  - changeSet:
+      id: 1726747097497-15
+      author: kchwi (generated)
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: user_id
+            baseTableName: token
+            constraintName: fkiblu4cjwvyntq3ugo31klp1c6
+            deferrable: false
+            initiallyDeferred: false
+            onDelete: NO ACTION
+            onUpdate: NO ACTION
+            referencedColumnNames: id
+            referencedTableName: _user
+            validate: true
+

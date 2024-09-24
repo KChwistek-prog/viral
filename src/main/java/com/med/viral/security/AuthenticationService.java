@@ -43,6 +43,9 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.password()))
                 .role(request.role())
                 .build();
+        if (user.getRole().equals(Role.PATIENT)) {
+            user.setAccountNonLocked(false);
+        }
         var savedUser = repository.save(user);
         claims.put("user_id", user.getId());
         claims.put("firstname", user.getFirstname());

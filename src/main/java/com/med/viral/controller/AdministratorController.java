@@ -1,6 +1,7 @@
 package com.med.viral.controller;
 
 import com.med.viral.model.Action;
+import com.med.viral.model.ActionType;
 import com.med.viral.model.AppointmentStatus;
 import com.med.viral.model.User;
 import com.med.viral.model.security.Role;
@@ -13,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -33,9 +35,20 @@ public class AdministratorController {
 
     @DeleteMapping("/deleteAccount/{id}")
     public void deleteUserAccount(@PathVariable("id") Integer userId) throws Exception {
+        User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var userToDelete = userRepository.findById(userId).orElseThrow().getUsername();
+        Action action = Action.builder()
+                .actionType(ActionType.DELETE_ACCOUNT)
+                .createdBy(loggedAdmin)
+                .createdDate(LocalDateTime.now())
+                .fieldName("User account")
+                .oldVersion(userToDelete)
+                .newVersion("Deleted")
+                .build();
         var user = userRepository.findById(userId).orElseThrow();
         if (!user.getRole().equals(Role.ADMIN)) {
             userRepository.delete(user);
+            actionRepository.save(action);
         } else throw new Exception("Can't delete administrator account");
     }
 
@@ -48,15 +61,44 @@ public class AdministratorController {
         return ResponseEntity.noContent().build();
     }
 
+    @PatchMapping("/addAccount/{id}")
+    public ResponseEntity<User> addAccount(@PathVariable("id") Integer userId) {
+        var localUser = userRepository.findById(userId).orElseThrow();
+        localUser.setAccountNonLocked(true);
+        User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var action = Action.builder()
+                .actionType(ActionType.ADD_ACCOUNT)
+                .createdBy(loggedAdmin)
+                .createdDate(LocalDateTime.now())
+                .fieldName("AccountNonLocked")
+                .oldVersion("false")
+                .newVersion("true")
+                .build();
+        return ResponseEntity.ok(userRepository.save(localUser));
+    }
+
     @PostMapping("/updateAppointmentStatus/{id}")
     public void changeAppoitmentStatus(@RequestBody String status, @PathVariable("id") Long appointmentID) {
-        var appointmentToChange = appointmentRepository.findById(appointmentID);
+        User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var appointmentToChange = appointmentRepository.findById(appointmentID).orElseThrow();
+
+        Action action = Action.builder()
+                .actionType(ActionType.MODIFY_ACCOUNT)
+                .createdBy(loggedAdmin)
+                .createdDate(LocalDateTime.now())
+                .fieldName("Appointment status")
+                .oldVersion(appointmentToChange.getStatus().toString())
+                .newVersion(status)
+                .build();
         if (status.equals(AppointmentStatus.OPEN.getValue())) {
-            appointmentToChange.orElseThrow().setStatus(AppointmentStatus.OPEN);
+            appointmentToChange.setStatus(AppointmentStatus.OPEN);
+            actionRepository.save(action);
         } else if (status.equals(AppointmentStatus.CLOSED.getValue())) {
-            appointmentToChange.orElseThrow().setStatus(AppointmentStatus.CLOSED);
+            appointmentToChange.setStatus(AppointmentStatus.CLOSED);
+            actionRepository.save(action);
         } else if (status.equals(AppointmentStatus.CANCELLED.getValue())) {
-            appointmentToChange.orElseThrow().setStatus(AppointmentStatus.CANCELLED);
+            appointmentToChange.setStatus(AppointmentStatus.CANCELLED);
+            actionRepository.save(action);
         }
     }
 

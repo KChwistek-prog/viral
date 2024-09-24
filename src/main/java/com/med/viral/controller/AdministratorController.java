@@ -3,11 +3,14 @@ package com.med.viral.controller;
 import com.med.viral.model.Action;
 import com.med.viral.model.ActionType;
 import com.med.viral.model.AppointmentStatus;
+import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
+import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.Role;
 import com.med.viral.repository.ActionRepository;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.repository.UserRepository;
+import com.med.viral.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,17 +24,20 @@ import java.util.List;
 @RequestMapping("/administrator")
 @PreAuthorize("hasRole('ADMIN')")
 public class AdministratorController {
-    UserRepository userRepository;
-    AppointmentRepository appointmentRepository;
-    ActionRepository actionRepository;
+    private final UserService userService;
+    private final UserMapper userMapper;
+    private final UserRepository userRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final ActionRepository actionRepository;
 
     @Autowired
-    public AdministratorController(UserRepository userRepository, AppointmentRepository appointmentRepository, ActionRepository actionRepository) {
+    public AdministratorController(UserService userService, UserMapper userMapper, UserRepository userRepository, AppointmentRepository appointmentRepository, ActionRepository actionRepository) {
+        this.userService = userService;
+        this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
         this.actionRepository = actionRepository;
     }
-
 
     @DeleteMapping("/deleteAccount/{id}")
     public void deleteUserAccount(@PathVariable("id") Integer userId) throws Exception {
@@ -53,17 +59,19 @@ public class AdministratorController {
     }
 
     @PatchMapping("/updateUser")
-    public ResponseEntity<User> editUserAccount(@RequestBody User user) {
-        var localUser = userRepository.findById(user.getId()).orElseThrow();
+    public ResponseEntity<UserDTO> editUserAccount(@RequestBody UserDTO userDTO) {
+        var localUser = userRepository.findById(userDTO.id()).orElseThrow();
+        var userAsDto = userMapper.toDTO(localUser);
         if (!localUser.getRole().equals(Role.ADMIN)) {
-            return ResponseEntity.ok(userRepository.save(user));
+            return ResponseEntity.ok(userService.saveUser(userAsDto));
         }
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.badRequest().build();
     }
 
     @PatchMapping("/addAccount/{id}")
-    public ResponseEntity<User> addAccount(@PathVariable("id") Integer userId) {
+    public ResponseEntity<UserDTO> addAccount(@PathVariable("id") Integer userId) {
         var localUser = userRepository.findById(userId).orElseThrow();
+        var userToDto = userMapper.toDTO(localUser);
         localUser.setAccountNonLocked(true);
         User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var action = Action.builder()
@@ -74,7 +82,7 @@ public class AdministratorController {
                 .oldVersion("false")
                 .newVersion("true")
                 .build();
-        return ResponseEntity.ok(userRepository.save(localUser));
+        return ResponseEntity.ok(userService.saveUser(userToDto));
     }
 
     @PostMapping("/updateAppointmentStatus/{id}")

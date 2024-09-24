@@ -1,6 +1,8 @@
 package com.med.viral.service;
 
+import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
+import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.ChangePasswordRequest;
 import com.med.viral.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,25 +17,29 @@ public class UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository repository;
+    private final UserMapper userMapper;
 
     @Autowired
-    public UserService(PasswordEncoder passwordEncoder, UserRepository repository) {
+    public UserService(PasswordEncoder passwordEncoder, UserRepository repository, UserMapper userMapper) {
         this.passwordEncoder = passwordEncoder;
         this.repository = repository;
+        this.userMapper = userMapper;
     }
 
     public void changePassword(ChangePasswordRequest request, Principal connectedUser) {
-
         var user = (User) ((UsernamePasswordAuthenticationToken) connectedUser).getPrincipal();
-
         if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
             throw new IllegalStateException("Wrong password");
         }
         if (!request.newPassword().equals(request.confirmationPassword())) {
             throw new IllegalStateException("Password are not the same");
         }
-
         user.setPassword(passwordEncoder.encode(request.newPassword()));
         repository.save(user);
+    }
+
+    public UserDTO saveUser(UserDTO userDTO) {
+        User user = userMapper.toEntity(userDTO);
+        return userMapper.toDTO(repository.save(user));
     }
 }

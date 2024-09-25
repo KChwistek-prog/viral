@@ -1,9 +1,10 @@
 package com.med.viral.controller;
 
+import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Appointment;
 import com.med.viral.model.AppointmentStatus;
 import com.med.viral.repository.AppointmentRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,25 +19,24 @@ import java.util.Date;
 @PreAuthorize("hasRole('PATIENT')")
 public class PatientController {
 
-    UserRepository repository;
+    UserService service;
     AppointmentRepository appointmentRepository;
 
     @Autowired
-    public PatientController(UserRepository repository, AppointmentRepository appointmentRepository) {
-        this.repository = repository;
+    public PatientController(AppointmentRepository appointmentRepository) {
         this.appointmentRepository = appointmentRepository;
     }
 
     @PostMapping("/addAppointment/{id}")
-    public ResponseEntity<Appointment> addAppointment(@PathVariable("id") Integer docId) {
+    public ResponseEntity<Appointment> addAppointment(@PathVariable("id") Integer docId) throws UserNotFoundException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var user = repository.findByEmail(loggedUser.getUsername()).orElseThrow();
-        var doctor = repository.findById(docId).orElseThrow();
+        var user = service.getByEmail(loggedUser.getUsername());
+        var doctor = service.getById(docId);
         Appointment newAppointment = null;
         if (user.isAccountNonLocked()) {
             Appointment.builder()
-                    .patient_id(user.getId())
-                    .doctor_id(doctor.getId())
+                    .patient_id(user.id())
+                    .doctor_id(doctor.id())
                     .date(new Date())
                     .status(AppointmentStatus.OPEN)
                     .build();

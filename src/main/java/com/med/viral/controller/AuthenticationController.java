@@ -1,8 +1,9 @@
 package com.med.viral.controller;
 
-import com.med.viral.model.security.RegisterRequest;
+import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.security.AuthenticationRequest;
 import com.med.viral.model.security.AuthenticationResponse;
+import com.med.viral.model.security.RegisterRequest;
 import com.med.viral.security.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/auth")
 public class AuthenticationController {
 
     private final AuthenticationService service;
@@ -32,14 +33,12 @@ public class AuthenticationController {
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) throws UserNotFoundException {
         return ResponseEntity.ok(service.authenticate(request));
     }
 
     @PostMapping("/refresh-token")
-    public void refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException, UserNotFoundException {
         service.refreshToken(request, response);
     }
 

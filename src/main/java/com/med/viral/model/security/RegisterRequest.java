@@ -5,7 +5,7 @@ import lombok.Builder;
 @Builder
 public record RegisterRequest(String firstname,
                               String lastname,
-                              String email,
+                              String username,
                               String password,
                               Role role) {
 }

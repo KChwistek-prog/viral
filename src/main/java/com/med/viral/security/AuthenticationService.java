@@ -1,10 +1,13 @@
 package com.med.viral.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.User;
+import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.*;
 import com.med.viral.repository.TokenRepository;
 import com.med.viral.repository.UserRepository;
+import com.med.viral.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,14 +27,18 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserService userService;
+    private final UserMapper userMapper;
 
     @Autowired
-    public AuthenticationService(UserRepository repository, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthenticationService(UserRepository repository, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, UserService userService, UserMapper userMapper) {
         this.repository = repository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.userService = userService;
+        this.userMapper = userMapper;
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -39,7 +46,7 @@ public class AuthenticationService {
         var user = User.builder()
                 .firstname(request.firstname())
                 .lastname(request.lastname())
-                .email(request.email())
+                .email(request.username())
                 .password(passwordEncoder.encode(request.password()))
                 .role(request.role())
                 .build();
@@ -48,8 +55,6 @@ public class AuthenticationService {
         }
         var savedUser = repository.save(user);
         claims.put("user_id", user.getId());
-        claims.put("firstname", user.getFirstname());
-        claims.put("lastname", user.getLastname());
         var jwtToken = jwtService.generateToken(claims, user);
         var refreshToken = jwtService.generateRefreshToken(user);
         saveUserToken(savedUser, jwtToken);
@@ -59,15 +64,9 @@ public class AuthenticationService {
                 .build();
     }
 
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.email(),
-                        request.password()
-                )
-        );
-        var user = repository.findByEmail(request.email())
-                .orElseThrow();
+    public AuthenticationResponse authenticate(AuthenticationRequest request) throws UserNotFoundException {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        var user = userMapper.toEntity(userService.getByEmail(request.username()));
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserTokens(user);
@@ -100,10 +99,7 @@ public class AuthenticationService {
         tokenRepository.saveAll(validUserTokens);
     }
 
-    public void refreshToken(
-            HttpServletRequest request,
-            HttpServletResponse response
-    ) throws IOException {
+    public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException, UserNotFoundException {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userEmail;
@@ -113,8 +109,7 @@ public class AuthenticationService {
         refreshToken = authHeader.substring(7);
         userEmail = jwtService.extractUsername(refreshToken);
         if (userEmail != null) {
-            var user = this.repository.findByEmail(userEmail)
-                    .orElseThrow();
+            var user = userMapper.toEntity(this.userService.getByEmail(userEmail));
             if (jwtService.isTokenValid(refreshToken, user)) {
                 var accessToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);

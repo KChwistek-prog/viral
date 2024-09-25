@@ -1,5 +1,6 @@
 package com.med.viral.service;
 
+import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
@@ -42,4 +43,26 @@ public class UserService {
         User user = userMapper.toEntity(userDTO);
         return userMapper.toDTO(repository.save(user));
     }
+
+    public UserDTO getByEmail(String email) throws UserNotFoundException {
+        var user = repository.findAll().stream()
+                .filter(u -> u.getEmail().equals(email))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        return userMapper.toDTO(user);
+    }
+
+    public UserDTO getById(Integer id) throws UserNotFoundException {
+        var user = repository.findById(id).orElseThrow(() -> new UserNotFoundException("User with the provided ID could not be found."));
+        return userMapper.toDTO(user);
+    }
+
+    public UserDTO getByUsername(String username) throws UserNotFoundException {
+        var user = repository.findAll().stream()
+                .filter(u -> u.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        return userMapper.toDTO(user);
+    }
+
 }

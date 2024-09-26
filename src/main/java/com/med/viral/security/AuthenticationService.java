@@ -65,7 +65,8 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) throws UserNotFoundException {
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        var userRequest = new UsernamePasswordAuthenticationToken(request.username(), request.password());
+        authenticationManager.authenticate(userRequest);
         var user = userMapper.toEntity(userService.getByEmail(request.username()));
         var jwtToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);

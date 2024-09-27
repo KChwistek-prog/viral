@@ -1,5 +1,6 @@
 package com.med.viral.controller;
 
+import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Action;
 import com.med.viral.model.ActionType;
 import com.med.viral.model.AppointmentStatus;
@@ -17,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -29,71 +31,82 @@ public class AdministratorController {
     private final UserRepository userRepository;
     private final AppointmentRepository appointmentRepository;
     private final ActionRepository actionRepository;
+    private final Clock clock;
 
     @Autowired
-    public AdministratorController(UserService userService, UserMapper userMapper, UserRepository userRepository, AppointmentRepository appointmentRepository, ActionRepository actionRepository) {
+    public AdministratorController(UserService userService, UserMapper userMapper, UserRepository userRepository, AppointmentRepository appointmentRepository, ActionRepository actionRepository, Clock clock) {
         this.userService = userService;
         this.userMapper = userMapper;
         this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
         this.actionRepository = actionRepository;
+        this.clock = clock;
     }
 
     @DeleteMapping("/deleteAccount/{id}")
     public void deleteUserAccount(@PathVariable("id") Integer userId) throws Exception {
         User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var userToDelete = userRepository.findById(userId).orElseThrow().getUsername();
+        var userToDelete = userService.getById(userId);
         Action action = Action.builder()
                 .actionType(ActionType.DELETE_ACCOUNT)
                 .createdBy(loggedAdmin)
-                .createdDate(LocalDateTime.now())
+                .createdDate(LocalDateTime.now(clock))
                 .fieldName("User account")
-                .oldVersion(userToDelete)
+                .oldVersion(userToDelete.toString())
                 .newVersion("Deleted")
                 .build();
-        var user = userRepository.findById(userId).orElseThrow();
-        if (!user.getRole().equals(Role.ADMIN)) {
-            userRepository.delete(user);
+        if (!userToDelete.role().equals(Role.ADMIN)) {
+            userService.deleteUser(userToDelete);
             actionRepository.save(action);
         } else throw new Exception("Can't delete administrator account");
     }
 
-    @PatchMapping("/updateUser")
-    public ResponseEntity<UserDTO> editUserAccount(@RequestBody UserDTO userDTO) {
-        var localUser = userRepository.findById(userDTO.id()).orElseThrow();
-        var userAsDto = userMapper.toDTO(localUser);
-        if (!localUser.getRole().equals(Role.ADMIN)) {
-            return ResponseEntity.ok(userService.saveUser(userAsDto));
+    @PatchMapping("/updateUser/{userId}")
+    public ResponseEntity<UserDTO> editUserAccount(@PathVariable("userId") Integer id, @RequestBody UserDTO userDTO) throws UserNotFoundException {
+        var loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var user = userService.getById(id);
+        var action = Action.builder()
+                .actionType(ActionType.MODIFY_ACCOUNT)
+                .createdBy(loggedAdmin)
+                .createdDate(LocalDateTime.now(clock))
+                .fieldName(userDTO.toString())
+                .oldVersion("false")
+                .newVersion(userDTO.toString())
+                .build();
+        if (!user.role().equals(Role.ADMIN)) {
+            userMapper.updateUserFromDto(userDTO, userMapper.toEntity(userDTO));
+            userService.saveUser(userDTO);
+            actionRepository.save(action);
         }
         return ResponseEntity.badRequest().build();
     }
 
-    @PatchMapping("/addAccount/{id}")
-    public ResponseEntity<UserDTO> addAccount(@PathVariable("id") Integer userId) {
-        var localUser = userRepository.findById(userId).orElseThrow();
-        var userToDto = userMapper.toDTO(localUser);
-        localUser.setAccountNonLocked(true);
-        User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    @PutMapping("/addAccount")
+    public ResponseEntity<UserDTO> addAccount(@RequestBody UserDTO userDTO) {
+        var user = userMapper.toEntity(userDTO);
+        user.setAccountNonLocked(true);
+        var loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var action = Action.builder()
                 .actionType(ActionType.ADD_ACCOUNT)
                 .createdBy(loggedAdmin)
-                .createdDate(LocalDateTime.now())
-                .fieldName("AccountNonLocked")
+                .createdDate(LocalDateTime.now(clock))
+                .fieldName("New account")
                 .oldVersion("false")
                 .newVersion("true")
                 .build();
-        return ResponseEntity.ok(userService.saveUser(userToDto));
+        actionRepository.save(action);
+        return ResponseEntity.ok(userService.saveUser(userMapper.toDTO(user)));
     }
 
     @PostMapping("/updateAppointmentStatus/{id}")
-    public void changeAppoitmentStatus(@RequestBody String status, @PathVariable("id") Long appointmentID) {
+    public void changeAppointmentStatus(@RequestBody String status, @PathVariable("id") Long appointmentID) {
         User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var appointmentToChange = appointmentRepository.findById(appointmentID).orElseThrow();
 
         Action action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
                 .createdBy(loggedAdmin)
-                .createdDate(LocalDateTime.now())
+                .createdDate(LocalDateTime.now(clock))
                 .fieldName("Appointment status")
                 .oldVersion(appointmentToChange.getStatus().toString())
                 .newVersion(status)
@@ -110,10 +123,23 @@ public class AdministratorController {
         }
     }
 
-    @PostMapping("/changeAccountStatus/{id}")
-    public void changeAccountStatus(@PathVariable("id") Integer userId) {
-        var user = userRepository.findById(userId).orElseThrow();
-        user.setAccountNonLocked(false);
+    @PostMapping("/changeAccountStatus/{name}")
+    public void changeAccountStatus(@PathVariable("name") String name) throws UserNotFoundException {
+        User loggedAdmin = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var getUser = userService.getByUsername(name);
+        User user = userMapper.toEntity(getUser);
+        user.setAccountNonLocked(true);
+        userService.saveUser(userMapper.toDTO(user));
+
+        Action action = Action.builder()
+                .actionType(ActionType.MODIFY_ACCOUNT)
+                .createdBy(loggedAdmin)
+                .createdDate(LocalDateTime.now(clock))
+                .fieldName("IsAccountNonLocked")
+                .oldVersion(String.valueOf(getUser.isAccountNonLocked()))
+                .newVersion(String.valueOf(user.isAccountNonLocked()))
+                .build();
+        actionRepository.save(action);
     }
 
     @PostMapping("/cancelAppointment/{id}")
@@ -132,8 +158,7 @@ public class AdministratorController {
     public List<Action> listAllActions() {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var adminActions = actionRepository.findAll();
-        return adminActions.stream().filter(a -> a.getCreatedBy().equals(loggedUser.getId())).toList();
-
+        return adminActions.stream().filter(a -> a.getCreatedBy().getId().equals(loggedUser.getId())).toList();
     }
 
 

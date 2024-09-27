@@ -44,6 +44,14 @@ public class UserService {
         return userMapper.toDTO(repository.save(user));
     }
 
+    public void deleteUser(UserDTO userDTO) throws UserNotFoundException {
+        var user = repository.findAll().stream()
+                .filter(u -> u.getId().equals(userDTO.id()))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("User could not be found."));
+        repository.delete(user);
+    }
+
     public UserDTO getByEmail(String email) throws UserNotFoundException {
         var user = repository.findAll().stream()
                 .filter(u -> u.getEmail().equals(email))

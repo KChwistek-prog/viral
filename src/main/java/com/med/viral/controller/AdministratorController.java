@@ -28,16 +28,14 @@ import java.util.List;
 public class AdministratorController {
     private final UserService userService;
     private final UserMapper userMapper;
-    private final UserRepository userRepository;
     private final AppointmentRepository appointmentRepository;
     private final ActionRepository actionRepository;
     private final Clock clock;
 
     @Autowired
-    public AdministratorController(UserService userService, UserMapper userMapper, UserRepository userRepository, AppointmentRepository appointmentRepository, ActionRepository actionRepository, Clock clock) {
+    public AdministratorController(UserService userService, UserMapper userMapper, AppointmentRepository appointmentRepository, ActionRepository actionRepository, Clock clock) {
         this.userService = userService;
         this.userMapper = userMapper;
-        this.userRepository = userRepository;
         this.appointmentRepository = appointmentRepository;
         this.actionRepository = actionRepository;
         this.clock = clock;
@@ -149,9 +147,8 @@ public class AdministratorController {
     }
 
     @GetMapping("/userList")
-    public List<User> listAllUsers() {
-        var users = userRepository.findAll();
-        return users.stream().filter(u -> !u.getRole().equals(Role.ADMIN)).toList();
+    public List<UserDTO> listAllUsers() {
+        return userService.getAllNonAdminUsers();
     }
 
     @GetMapping("/getActions")

@@ -5,6 +5,7 @@ import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.ChangePasswordRequest;
+import com.med.viral.model.security.Role;
 import com.med.viral.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -12,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.util.List;
 
 @Service
 public class UserService {
@@ -73,4 +75,10 @@ public class UserService {
         return userMapper.toDTO(user);
     }
 
+    public List<UserDTO> getAllNonAdminUsers() {
+        return repository.findAll().stream()
+                .filter(u -> !u.getRole().equals(Role.ADMIN))
+                .map(userMapper::toDTO)
+                .toList();
+    }
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class UserService {
@@ -80,5 +81,10 @@ public class UserService {
                 .filter(u -> !u.getRole().equals(Role.ADMIN))
                 .map(userMapper::toDTO)
                 .toList();
+    }
+
+    public List<UserDTO> getAllPatientsByIds(Set<Integer> patientList) {
+        var user = repository.findAllById(patientList);
+        return  user.stream().map(userMapper::toDTO).toList();
     }
 }

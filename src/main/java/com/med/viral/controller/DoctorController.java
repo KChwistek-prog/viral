@@ -1,16 +1,17 @@
 package com.med.viral.controller;
 
 import com.med.viral.model.Appointment;
+import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
 import com.med.viral.repository.AppointmentRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
@@ -18,23 +19,24 @@ import java.util.stream.Collectors;
 @PreAuthorize("hasRole('DOCTOR')")
 public class DoctorController {
 
-    UserRepository userRepository;
+    UserService userService;
     AppointmentRepository appointmentRepository;
 
     @Autowired
-    public DoctorController(UserRepository userRepository, AppointmentRepository appointmentRepository) {
-        this.userRepository = userRepository;
+    public DoctorController(UserService userService, AppointmentRepository appointmentRepository) {
+        this.userService = userService;
         this.appointmentRepository = appointmentRepository;
     }
 
     @GetMapping("/getPatients")
-    public ResponseEntity<Set<User>> getPatientList() {
+    public ResponseEntity<List<UserDTO>> getPatientList() {
         User loggedDoc = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(appointmentRepository.findAll().stream()
+        var appointments = appointmentRepository.findAll();
+        var patients = appointments.stream()
                 .filter(a -> a.getDoctor_id().equals(loggedDoc.getId()))
-                .map(a -> userRepository.findById(a.getPatient_id()))
-                .map(Optional::orElseThrow)
-                .collect(Collectors.toSet()));
+                .map(Appointment::getPatient_id)
+                .collect(Collectors.toSet());
+        return ResponseEntity.ok(userService.getAllPatientsByIds(patients));
     }
 
     @DeleteMapping("/deleteAppointment/{id}")

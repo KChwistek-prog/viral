@@ -32,10 +32,6 @@ dependencies {
     implementation 'io.swagger.core.v3:swagger-core:2.2.21'
     implementation 'org.mapstruct:mapstruct:1.6.2'
     annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.2'
-    implementation platform('org.apache.groovy:groovy-bom:4.0.22')
-    implementation 'org.apache.groovy:groovy'
-    testImplementation platform("org.spockframework:spock-bom:2.4-M4-groovy-4.0")
-    testImplementation "org.spockframework:spock-core"
     implementation 'org.liquibase:liquibase-core:4.29.0'
     liquibaseRuntime 'org.liquibase:liquibase-core:4.29.0'
     liquibaseRuntime 'org.postgresql:postgresql:42.7.3'
@@ -43,6 +39,7 @@ dependencies {
     liquibaseRuntime 'org.liquibase.ext:liquibase-hibernate6:4.28.0'
     liquibaseRuntime("ch.qos.logback:logback-core:1.5.6")
     liquibaseRuntime("ch.qos.logback:logback-classic:1.5.6")
+    runtimeOnly 'com.h2database:h2:2.2.224'
 }
 
 tasks.named('test') {

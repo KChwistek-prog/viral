@@ -5,7 +5,6 @@ import com.med.viral.model.Appointment;
 import com.med.viral.model.AppointmentStatus;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +21,6 @@ public class PatientController {
     UserService service;
     AppointmentRepository appointmentRepository;
 
-    @Autowired
     public PatientController(AppointmentRepository appointmentRepository) {
         this.appointmentRepository = appointmentRepository;
     }
@@ -30,7 +28,7 @@ public class PatientController {
     @PostMapping("/addAppointment/{id}")
     public ResponseEntity<Appointment> addAppointment(@PathVariable("id") Integer docId) throws UserNotFoundException {
         UserDetails loggedUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var user = service.getByEmail(loggedUser.getUsername());
+        var user = service.getByUsername(loggedUser.getUsername());
         var doctor = service.getById(docId);
         Appointment newAppointment = null;
         if (user.isAccountNonLocked()) {

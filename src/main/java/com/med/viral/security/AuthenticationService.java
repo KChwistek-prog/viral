@@ -30,7 +30,6 @@ public class AuthenticationService {
     private final UserService userService;
     private final UserMapper userMapper;
 
-    @Autowired
     public AuthenticationService(UserRepository repository, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, UserService userService, UserMapper userMapper) {
         this.repository = repository;
         this.tokenRepository = tokenRepository;

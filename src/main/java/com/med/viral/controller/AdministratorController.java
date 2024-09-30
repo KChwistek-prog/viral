@@ -10,9 +10,7 @@ import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.Role;
 import com.med.viral.repository.ActionRepository;
 import com.med.viral.repository.AppointmentRepository;
-import com.med.viral.repository.UserRepository;
 import com.med.viral.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,7 +30,6 @@ public class AdministratorController {
     private final ActionRepository actionRepository;
     private final Clock clock;
 
-    @Autowired
     public AdministratorController(UserService userService, UserMapper userMapper, AppointmentRepository appointmentRepository, ActionRepository actionRepository, Clock clock) {
         this.userService = userService;
         this.userMapper = userMapper;

@@ -7,7 +7,6 @@ import com.med.viral.model.security.RegisterRequest;
 import com.med.viral.security.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,7 +21,6 @@ public class AuthenticationController {
 
     private final AuthenticationService service;
 
-    @Autowired
     public AuthenticationController(AuthenticationService service) {
         this.service = service;
     }

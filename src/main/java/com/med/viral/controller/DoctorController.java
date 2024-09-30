@@ -5,7 +5,6 @@ import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +21,6 @@ public class DoctorController {
     UserService userService;
     AppointmentRepository appointmentRepository;
 
-    @Autowired
     public DoctorController(UserService userService, AppointmentRepository appointmentRepository) {
         this.userService = userService;
         this.appointmentRepository = appointmentRepository;

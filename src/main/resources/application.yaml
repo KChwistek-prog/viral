@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: viral
+  datasource:
+    username: admin
+    password: psql
+    driver-class-name: org.postgresql.Driver
+    url: 'jdbc:postgresql://localhost:5433/viral_med'
+  jpa:
+    hibernate:
+      ddl-auto: drop

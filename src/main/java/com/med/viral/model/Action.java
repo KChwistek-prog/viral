@@ -1,17 +1,16 @@
 package com.med.viral.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Objects;
 
+@Setter
+@Getter
 @Builder
 @RequiredArgsConstructor
 @Entity
@@ -21,7 +20,7 @@ public class Action {
     @Id
     private Integer id;
     @CreatedBy
-    private User createdBy;
+    private Admin createdBy;
     @CreatedDate
     private LocalDateTime createdDate;
     @Enumerated
@@ -29,61 +28,21 @@ public class Action {
     private String fieldName;
     private String oldVersion;
     private String newVersion;
+    @ManyToOne
+    @JoinColumn(name = "admin_id")
+    private Admin admin;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public User getCreatedBy() {
-        return createdBy;
-    }
-
-    public void setCreatedBy(User createdBy) {
-        this.createdBy = createdBy;
-    }
-
-    public LocalDateTime getCreatedDate() {
-        return createdDate;
-    }
-
-    public void setCreatedDate(LocalDateTime createdDate) {
-        this.createdDate = createdDate;
-    }
-
-    public ActionType getActionType() {
-        return actionType;
-    }
-
-    public void setActionType(ActionType actionType) {
-        this.actionType = actionType;
-    }
-
-    public String getFieldName() {
-        return fieldName;
-    }
-
-    public void setFieldName(String fieldName) {
-        this.fieldName = fieldName;
-    }
-
-    public String getOldVersion() {
-        return oldVersion;
-    }
-
-    public void setOldVersion(String oldVersion) {
-        this.oldVersion = oldVersion;
-    }
-
-    public String getNewVersion() {
-        return newVersion;
-    }
-
-    public void setNewVersion(String newVersion) {
-        this.newVersion = newVersion;
+    @Override
+    public String toString() {
+        return "Action{" +
+                "id=" + id +
+                ", createdBy=" + createdBy +
+                ", createdDate=" + createdDate +
+                ", actionType=" + actionType +
+                ", fieldName='" + fieldName + '\'' +
+                ", oldVersion='" + oldVersion + '\'' +
+                ", newVersion='" + newVersion + '\'' +
+                '}';
     }
 
     @Override
@@ -100,18 +59,5 @@ public class Action {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Action{" +
-                "id=" + id +
-                ", createdBy=" + createdBy +
-                ", createdDate='" + createdDate + '\'' +
-                ", actionType=" + actionType +
-                ", fieldName='" + fieldName + '\'' +
-                ", oldVersion='" + oldVersion + '\'' +
-                ", newVersion='" + newVersion + '\'' +
-                '}';
     }
 }

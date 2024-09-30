@@ -1,76 +1,30 @@
 package com.med.viral.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.Date;
 import java.util.Objects;
 
+@Setter
+@Getter
 @RequiredArgsConstructor
+@AllArgsConstructor
 @Entity
 @Builder
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private  Long id;
-    private  Integer patient_id;
-    private  Integer doctor_id;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private  User user;
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    private  Doctor doctor;
     private  Date date;
     private  AppointmentStatus status;
-
-    public Appointment(Long id, Integer patient_id, Integer doctor_id, Date date, AppointmentStatus status) {
-        this.id = id;
-        this.patient_id = patient_id;
-        this.doctor_id = doctor_id;
-        this.date = date;
-        this.status = status;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Integer getPatient_id() {
-        return patient_id;
-    }
-
-    public void setPatient_id(Integer patient_id) {
-        this.patient_id = patient_id;
-    }
-
-    public Integer getDoctor_id() {
-        return doctor_id;
-    }
-
-    public void setDoctor_id(Integer doctor_id) {
-        this.doctor_id = doctor_id;
-    }
-
-    public Date getDate() {
-        return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public AppointmentStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(AppointmentStatus status) {
-        this.status = status;
-    }
-
-
 
     @Override
     public final boolean equals(Object o) {
@@ -92,8 +46,8 @@ public class Appointment {
     public String toString() {
         return "Appointment{" +
                 "id=" + id +
-                ", patient_id=" + patient_id +
-                ", doctor_id=" + doctor_id +
+                ", user=" + user +
+                ", doctor=" + doctor +
                 ", date=" + date +
                 ", status=" + status +
                 '}';

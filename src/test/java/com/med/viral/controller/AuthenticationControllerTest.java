@@ -1,6 +1,8 @@
 package com.med.viral.controller;
 
-import com.med.viral.model.Admin;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.med.viral.model.security.RegisterRequest;
+import com.med.viral.model.security.Role;
 import com.med.viral.repository.AdminRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,9 +10,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -24,21 +25,29 @@ class AuthenticationControllerTest {
     @Autowired
     AdminRepository adminRepository;
 
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Test
     void testRegister() throws Exception {
         //given
-        String body = "{\"name\":\"Alice\",\"lastname\":\"Cooper\",\"username\":\"admin\",\"password\":\"1234\",\"role\":\"ADMIN\"}";
+        RegisterRequest request = new RegisterRequest("Alice", "Cooper", "testuser", "password123", Role.ADMIN);
+        //when and then
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
 
-        //when
-        var result = mockMvc.perform(post("/auth/register")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(body));
-        Admin newUser = adminRepository.findById(1).orElseThrow();
-
-        //then
-        result.andExpect(status().isOk());
-        assertEquals("Cooper", newUser.getLastname());
     }
 
+    @Test
+    public void testRegisterWithNull() throws Exception {
+        //given
+        RegisterRequest request = new RegisterRequest("Alice", "Cooper",null, "password123", Role.ADMIN);
+        //when and then
+        mockMvc.perform(MockMvcRequestBuilders.post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
 }

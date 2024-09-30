@@ -7,6 +7,7 @@ import com.med.viral.model.security.RegisterRequest;
 import com.med.viral.security.AuthenticationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,7 +25,7 @@ public class AuthenticationController {
     private final AuthenticationService service;
 
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<AuthenticationResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.ok(service.register(request));
     }
 

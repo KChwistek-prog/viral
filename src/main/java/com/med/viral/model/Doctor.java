@@ -34,6 +34,12 @@ public class Doctor implements UserDetails {
     private Role role;
     @OneToMany(mappedBy = "doctor")
     private List<Token> tokens;
+    private boolean isAccountNonLocked;
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.isAccountNonLocked;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

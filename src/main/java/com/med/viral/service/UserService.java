@@ -3,6 +3,8 @@ package com.med.viral.service;
 import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Appointment;
 import com.med.viral.model.AppointmentStatus;
+import com.med.viral.model.DTO.AdminDTO;
+import com.med.viral.model.DTO.DoctorDTO;
 import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
@@ -72,12 +74,28 @@ public class UserService {
         return userMapper.UserEntityToDTO(user);
     }
 
-    public UserDTO getByUsername(String username) throws UserNotFoundException {
+    public UserDTO getUserByUsername(String username) throws UserNotFoundException {
         var user = userRepository.findAll().stream()
                 .filter(u -> u.getUsername().equals(username))
                 .findFirst()
                 .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
         return userMapper.UserEntityToDTO(user);
+    }
+
+    public DoctorDTO getDoctorByUsername(String username) throws UserNotFoundException {
+        var doctor = doctorRepository.findAll().stream()
+                .filter(d -> d.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        return userMapper.DoctorEntityToDTO(doctor);
+    }
+
+    public AdminDTO getAdminByUsername(String username) throws UserNotFoundException {
+        var admin = adminRepository.findAll().stream()
+                .filter(a -> a.getUsername().equals(username))
+                .findFirst()
+                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        return userMapper.AdminEntityToDTO(admin);
     }
 
     public List<UserDTO> getAllNonAdminUsers() {
@@ -98,7 +116,7 @@ public class UserService {
     public Appointment registerAppointment(User user, Integer doctorId) throws UserNotFoundException {
         var doctor = doctorRepository.findById(doctorId);
         if (user.isAccountNonLocked()) {
-           return appointmentRepository.save(Appointment.builder()
+            return appointmentRepository.save(Appointment.builder()
                     .user(user)
                     .doctor(doctor.orElseThrow())
                     .date(new Date())

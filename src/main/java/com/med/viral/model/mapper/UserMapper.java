@@ -13,16 +13,24 @@ public interface UserMapper {
     @Mapping(source = "accountNonLocked", target = "isAccountNonLocked")
     UserDTO UserEntityToDTO(User user);
 
-    User CreateDTOToEntity(CreateUserDTO createUserDTO);
-
     @Mapping(source = "isAccountNonLocked", target = "isAccountNonLocked")
     User UserDTOtoEntity(UserDTO userDTO);
+
+    User createUserDTOToEntity(CreateUserDTO createUserDTO);
 
     void updateUserFromDto(UserDTO dto, @MappingTarget User entity);
 
     AdminDTO AdminEntityToDTO(Admin admin);
 
+    Admin adminDTOToEntity(AdminDTO adminDTO);
+
     Admin UserDTOtoEntity(CreateAdminDTO createAdminDTO);
 
-    Doctor UserDTOtoEntity(CreateDoctorDTO createDoctorDTO);
+    Doctor DoctorDTOtoEntity(DoctorDTO DoctorDTO);
+
+    Doctor createDoctorDTOToEntity(CreateDoctorDTO createDoctorDTO);
+
+    DoctorDTO DoctorEntityToDTO(Doctor doctor);
+
+
 }

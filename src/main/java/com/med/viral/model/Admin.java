@@ -37,10 +37,16 @@ public class Admin implements UserDetails {
     private List<Token> tokens;
     @OneToMany(mappedBy = "admin")
     private List<Action> actions;
+    private boolean isAccountNonLocked;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.role.getAuthorities();
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return this.isAccountNonLocked;
     }
 
     @Override

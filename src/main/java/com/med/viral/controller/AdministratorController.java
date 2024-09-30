@@ -9,7 +9,6 @@ import com.med.viral.repository.ActionRepository;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.service.UserService;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -113,7 +112,7 @@ public class AdministratorController {
     @PostMapping("/changeAccountStatus/{name}")
     public void changeAccountStatus(@PathVariable("name") String name) throws UserNotFoundException {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var getUser = userService.getByUsername(name);
+        var getUser = userService.getUserByUsername(name);
         User user = userMapper.UserDTOtoEntity(getUser);
         user.setAccountNonLocked(true);
         userService.saveUser(userMapper.UserEntityToDTO(user));

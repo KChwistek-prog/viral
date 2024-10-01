@@ -75,26 +75,20 @@ public class UserService {
     }
 
     public UserDTO getUserByUsername(String username) throws UserNotFoundException {
-        var user = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().equals(username))
-                .findFirst()
-                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with the provided username could not be found."));
         return userMapper.UserEntityToDTO(user);
     }
 
     public DoctorDTO getDoctorByUsername(String username) throws UserNotFoundException {
-        var doctor = doctorRepository.findAll().stream()
-                .filter(d -> d.getUsername().equals(username))
-                .findFirst()
-                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        var doctor = doctorRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with the provided username could not be found."));
         return userMapper.DoctorEntityToDTO(doctor);
     }
 
     public AdminDTO getAdminByUsername(String username) throws UserNotFoundException {
-        var admin = adminRepository.findAll().stream()
-                .filter(a -> a.getUsername().equals(username))
-                .findFirst()
-                .orElseThrow(() -> new UserNotFoundException("User with the provided email could not be found."));
+        var admin = adminRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with the provided username could not be found."));
         return userMapper.AdminEntityToDTO(admin);
     }
 

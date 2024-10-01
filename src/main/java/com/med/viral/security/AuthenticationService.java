@@ -2,6 +2,7 @@ package com.med.viral.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.med.viral.exceptions.UserNotFoundException;
+import com.med.viral.exceptions.UsernameAlreadyExistsException;
 import com.med.viral.model.Admin;
 import com.med.viral.model.DTO.CreateAdminDTO;
 import com.med.viral.model.DTO.CreateDoctorDTO;
@@ -41,6 +42,11 @@ public class AuthenticationService {
     private final UserMapper userMapper;
 
     public AuthenticationResponse register(RegisterRequest request) {
+        if (adminRepository.existsByUsername(request.username()) ||
+                doctorRepository.existsByUsername(request.username()) ||
+                userRepository.existsByUsername(request.username())) {
+            throw new UsernameAlreadyExistsException("Username already exists.");
+        }
         var claims = new HashMap<String, Object>();
 
         return switch (request.role()) {
@@ -72,7 +78,7 @@ public class AuthenticationService {
                 CreateUserDTO create = new CreateUserDTO(request.firstname(), request.lastname(), request.username(), passwordEncoder.encode(request.password()), request.role());
                 User userEntity = userRepository.save(userMapper.createUserDTOToEntity(create));
                 userEntity.setAccountNonLocked(false);
-                claims.put("id",userEntity.getId());
+                claims.put("id", userEntity.getId());
                 var jwtToken = jwtService.generateToken(claims, userEntity);
                 var refreshToken = jwtService.generateRefreshToken(userEntity);
                 saveUserToken(userEntity, jwtToken);
@@ -87,9 +93,9 @@ public class AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) throws UserNotFoundException {
         var userRequest = new UsernamePasswordAuthenticationToken(request.username(), request.password());
         authenticationManager.authenticate(userRequest);
-        var response = switch(request.role()){
+        return switch (request.role()) {
             case PATIENT -> {
-                var user = userMapper.UserDTOtoEntity(userService.getUserByUsername(request.username()));
+                User user = userMapper.UserDTOtoEntity(userService.getUserByUsername(request.username()));
                 var jwtToken = jwtService.generateToken(user);
                 var refreshToken = jwtService.generateRefreshToken(user);
                 revokeAllUserTokens(user);
@@ -100,18 +106,18 @@ public class AuthenticationService {
                         .build();
             }
             case DOCTOR -> {
-                var user =userMapper.DoctorDTOtoEntity(userService.getDoctorByUsername(request.username()));
-                var jwtToken = jwtService.generateToken(user);
-                var refreshToken = jwtService.generateRefreshToken(user);
-                revokeAllUserTokens(user);
-                saveUserToken(user, jwtToken);
+                Doctor doctor = userMapper.DoctorDTOtoEntity(userService.getDoctorByUsername(request.username()));
+                var jwtToken = jwtService.generateToken(doctor);
+                var refreshToken = jwtService.generateRefreshToken(doctor);
+                revokeAllUserTokens(doctor);
+                saveUserToken(doctor, jwtToken);
                 yield AuthenticationResponse.builder()
                         .accessToken(jwtToken)
                         .refreshToken(refreshToken)
                         .build();
             }
             case ADMIN -> {
-                var admin = userMapper.adminDTOToEntity(userService.getAdminByUsername(request.username()));
+                Admin admin = userMapper.adminDTOToEntity(userService.getAdminByUsername(request.username()));
                 var jwtToken = jwtService.generateToken(admin);
                 var refreshToken = jwtService.generateRefreshToken(admin);
                 revokeAllUserTokens(admin);
@@ -123,7 +129,6 @@ public class AuthenticationService {
             }
 
         };
-        return response;
     }
 
     private void saveUserToken(User user, String jwtToken) {
@@ -169,6 +174,7 @@ public class AuthenticationService {
         });
         tokenRepository.saveAll(validUserTokens);
     }
+
     private void revokeAllUserTokens(Doctor doctor) {
         var validUserTokens = tokenRepository.findAllValidTokenByUser(doctor.getId());
         if (validUserTokens.isEmpty())

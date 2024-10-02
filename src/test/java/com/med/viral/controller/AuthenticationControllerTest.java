@@ -11,8 +11,6 @@ import com.med.viral.model.security.Role;
 import com.med.viral.repository.AdminRepository;
 import com.med.viral.repository.DoctorRepository;
 import com.med.viral.repository.UserRepository;
-import jakarta.transaction.Transactional;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -41,7 +39,7 @@ class AuthenticationControllerTest {
     UserRepository userRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    ObjectMapper objectMapper;
 
     @Autowired
     UserMapper userMapper;
@@ -107,6 +105,7 @@ class AuthenticationControllerTest {
         doctor.setRole(Role.DOCTOR);
         doctor.setAccountNonLocked(true);
         doctorRepository.save(doctor);
+
         //when and then
         var login = new AuthenticationRequest("doctor", "1234", Role.DOCTOR);
         mockMvc.perform(post("/auth/authenticate")

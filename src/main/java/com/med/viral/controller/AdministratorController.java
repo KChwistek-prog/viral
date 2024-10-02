@@ -38,7 +38,7 @@ public class AdministratorController {
                 .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
                 .fieldName("User account")
-                .oldVersion(userToDelete.toString())
+                .oldVersion(userToDelete.username())
                 .newVersion("Deleted")
                 .build();
         if (!userToDelete.role().equals(Role.ADMIN)) {
@@ -63,6 +63,7 @@ public class AdministratorController {
             userMapper.updateUserFromDto(userDTO, userMapper.UserDTOtoEntity(userDTO));
             userService.saveUser(userDTO);
             actionRepository.save(action);
+            return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().build();
     }
@@ -129,9 +130,12 @@ public class AdministratorController {
     }
 
     @PostMapping("/cancelAppointment/{id}")
-    public void cancelAppointment(@PathVariable("id") Long appointmentId) {
-        var appointmentToCancel = appointmentRepository.findById(appointmentId);
-        appointmentToCancel.orElseThrow().setStatus(AppointmentStatus.CANCELLED);
+    public ResponseEntity<Void> cancelAppointment(@PathVariable("id") Long appointmentId) throws UserNotFoundException {
+        var appointmentToCancel = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new UserNotFoundException("Appointment not found"));
+        appointmentToCancel.setStatus(AppointmentStatus.CANCELLED);
+        appointmentRepository.save(appointmentToCancel);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/userList")

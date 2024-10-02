@@ -5,7 +5,6 @@ import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Appointment;
 import com.med.viral.model.User;
 import com.med.viral.service.AppointmentService;
-import com.med.viral.service.UserService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,14 +16,12 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('PATIENT')")
 @AllArgsConstructor
 public class PatientController {
-
-    UserService userService;
-    AppointmentService appointmentService;
+    private final AppointmentService appointmentService;
 
     @PostMapping("/addAppointment/{id}")
     public ResponseEntity<Appointment> addAppointment(@PathVariable("id") Integer docId) throws UserNotFoundException {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-       return ResponseEntity.ok(userService.registerAppointment(loggedUser, docId));
+        return ResponseEntity.ok(appointmentService.registerAppointment(loggedUser, docId));
     }
 
     @DeleteMapping("/deleteAppointment/{id}")

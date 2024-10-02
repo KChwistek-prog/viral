@@ -2,7 +2,7 @@ package com.med.viral.controller;
 
 import com.med.viral.model.Appointment;
 import com.med.viral.model.DTO.UserDTO;
-import com.med.viral.model.User;
+import com.med.viral.model.Doctor;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.service.UserService;
 import lombok.AllArgsConstructor;
@@ -25,7 +25,7 @@ public class DoctorController {
 
     @GetMapping("/getPatients")
     public ResponseEntity<Set<UserDTO>> getPatientList() {
-        User loggedDoc = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var loggedDoc = (Doctor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(userService.getAllPatients(loggedDoc.getId()));
     }
 
@@ -36,7 +36,7 @@ public class DoctorController {
 
     @GetMapping("/getAppointments")
     public ResponseEntity<List<Appointment>> getPatientsAppointments() {
-        User loggedDoc = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var loggedDoc = (Doctor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(appointmentRepository.findAll().stream()
                 .filter(a -> a.getDoctor().getId().equals(loggedDoc.getId()))
                 .toList());

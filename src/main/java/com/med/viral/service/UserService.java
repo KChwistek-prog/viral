@@ -2,7 +2,6 @@ package com.med.viral.service;
 
 import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Appointment;
-import com.med.viral.model.AppointmentStatus;
 import com.med.viral.model.DTO.AdminDTO;
 import com.med.viral.model.DTO.DoctorDTO;
 import com.med.viral.model.DTO.UserDTO;
@@ -20,7 +19,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -105,18 +103,5 @@ public class UserService {
                 .map(Appointment::getUser)
                 .map(userMapper::UserEntityToDTO)
                 .collect(Collectors.toSet());
-    }
-
-    public Appointment registerAppointment(User user, Integer doctorId) throws UserNotFoundException {
-        var doctor = doctorRepository.findById(doctorId);
-        if (user.isAccountNonLocked()) {
-            return appointmentRepository.save(Appointment.builder()
-                    .user(user)
-                    .doctor(doctor.orElseThrow())
-                    .date(new Date())
-                    .status(AppointmentStatus.OPEN)
-                    .build());
-        } else throw new UserNotFoundException("User Locked");
-
     }
 }

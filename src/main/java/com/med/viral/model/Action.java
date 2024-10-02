@@ -18,9 +18,10 @@ import java.util.Objects;
 public class Action {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     @CreatedBy
-    private Admin createdBy;
+    private Integer createdBy;
     @CreatedDate
     private LocalDateTime createdDate;
     @Enumerated

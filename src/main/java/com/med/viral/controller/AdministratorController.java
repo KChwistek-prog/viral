@@ -35,7 +35,7 @@ public class AdministratorController {
         var userToDelete = userService.getById(userId);
         Action action = Action.builder()
                 .actionType(ActionType.DELETE_ACCOUNT)
-                .createdBy(loggedAdmin)
+                .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
                 .fieldName("User account")
                 .oldVersion(userToDelete.toString())
@@ -53,7 +53,7 @@ public class AdministratorController {
         var user = userService.getById(id);
         var action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
-                .createdBy(loggedAdmin)
+                .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
                 .fieldName(userDTO.toString())
                 .oldVersion("false")
@@ -74,7 +74,7 @@ public class AdministratorController {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var action = Action.builder()
                 .actionType(ActionType.ADD_ACCOUNT)
-                .createdBy(loggedAdmin)
+                .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
                 .fieldName("New account")
                 .oldVersion("false")
@@ -91,7 +91,7 @@ public class AdministratorController {
 
         Action action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
-                .createdBy(loggedAdmin)
+                .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
                 .fieldName("Appointment status")
                 .oldVersion(appointmentToChange.getStatus().toString())
@@ -119,7 +119,7 @@ public class AdministratorController {
 
         Action action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
-                .createdBy(loggedAdmin)
+                .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
                 .fieldName("IsAccountNonLocked")
                 .oldVersion(String.valueOf(getUser.isAccountNonLocked()))
@@ -143,7 +143,7 @@ public class AdministratorController {
     public List<Action> listAllActions() {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var adminActions = actionRepository.findAll();
-        return adminActions.stream().filter(a -> a.getCreatedBy().getId().equals(loggedUser.getId())).toList();
+        return adminActions.stream().filter(a -> a.getCreatedBy().equals(loggedUser.getId())).toList();
     }
 
 

@@ -120,7 +120,7 @@ class AdministratorControllerTest {
         mockMvc.perform(delete("/administrator/deleteAccount/" + userToDelete.getId())
                         .header("Authorization", "Bearer " + token.accessToken())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -156,7 +156,7 @@ class AdministratorControllerTest {
         mockMvc.perform(post("/administrator/changeAccountStatus/user1")
                         .header("Authorization", "Bearer " + token.accessToken())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -168,7 +168,7 @@ class AdministratorControllerTest {
                 .content(objectMapper.writeValueAsString(login))).andReturn().getResponse().getContentAsString();
         var token = objectMapper.readValue(loggedAdmin, AuthenticationResponse.class);
         //when and then
-        mockMvc.perform(post("/administrator/changeAccountStatus/user1")
+        mockMvc.perform(get("/administrator/userList")
                         .header("Authorization", "Bearer " + token.accessToken())
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());

@@ -1,14 +1,18 @@
 package com.med.viral.controller;
 
+import com.med.viral.exceptions.AppointmentNotFoundException;
 import com.med.viral.exceptions.UserNotFoundException;
-import com.med.viral.model.*;
+import com.med.viral.model.Action;
+import com.med.viral.model.ActionType;
+import com.med.viral.model.Admin;
 import com.med.viral.model.DTO.UserDTO;
+import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.Role;
-import com.med.viral.repository.ActionRepository;
-import com.med.viral.repository.AppointmentRepository;
+import com.med.viral.service.ActionService;
+import com.med.viral.service.AppointmentService;
 import com.med.viral.service.UserService;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,16 +25,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/administrator")
 @PreAuthorize("hasRole('ADMIN')")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AdministratorController {
     private final UserService userService;
     private final UserMapper userMapper;
-    private final AppointmentRepository appointmentRepository;
-    private final ActionRepository actionRepository;
+    private final AppointmentService appointmentService;
+    private final ActionService actionService;
     private final Clock clock;
 
     @DeleteMapping("/deleteAccount/{id}")
-    public void deleteUserAccount(@PathVariable("id") Integer userId) throws Exception {
+    public ResponseEntity<Void> deleteUserAccount(@PathVariable("id") Integer userId) throws Exception {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var userToDelete = userService.getById(userId);
         Action action = Action.builder()
@@ -43,8 +47,9 @@ public class AdministratorController {
                 .build();
         if (!userToDelete.role().equals(Role.ADMIN)) {
             userService.deleteUser(userToDelete);
-            actionRepository.save(action);
+            actionService.saveAction(action);
         } else throw new Exception("Can't delete administrator account");
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/updateUser/{userId}")
@@ -62,7 +67,7 @@ public class AdministratorController {
         if (!user.role().equals(Role.ADMIN)) {
             userMapper.updateUserFromDto(userDTO, userMapper.UserDTOtoEntity(userDTO));
             userService.saveUser(userDTO);
-            actionRepository.save(action);
+            actionService.saveAction(action);
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.badRequest().build();
@@ -81,15 +86,15 @@ public class AdministratorController {
                 .oldVersion("false")
                 .newVersion("true")
                 .build();
-        actionRepository.save(action);
+        actionService.saveAction(action);
         return ResponseEntity.ok(userService.saveUser(userMapper.UserEntityToDTO(user)));
     }
 
     @PostMapping("/updateAppointmentStatus/{id}")
-    public void changeAppointmentStatus(@RequestBody String status, @PathVariable("id") Long appointmentID) {
+    public ResponseEntity<Void> changeAppointmentStatus(@RequestBody String status, @PathVariable("id") Long appointmentID) throws AppointmentNotFoundException {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var appointmentToChange = appointmentRepository.findById(appointmentID).orElseThrow();
-
+        var appointmentToChange = appointmentService.getAppointmentById(appointmentID);
+        appointmentService.changeAppointmentStatus(appointmentToChange, status);
         Action action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
                 .createdBy(loggedAdmin.getId())
@@ -98,20 +103,12 @@ public class AdministratorController {
                 .oldVersion(appointmentToChange.getStatus().toString())
                 .newVersion(status)
                 .build();
-        if (status.equals(AppointmentStatus.OPEN.getValue())) {
-            appointmentToChange.setStatus(AppointmentStatus.OPEN);
-            actionRepository.save(action);
-        } else if (status.equals(AppointmentStatus.CLOSED.getValue())) {
-            appointmentToChange.setStatus(AppointmentStatus.CLOSED);
-            actionRepository.save(action);
-        } else if (status.equals(AppointmentStatus.CANCELLED.getValue())) {
-            appointmentToChange.setStatus(AppointmentStatus.CANCELLED);
-            actionRepository.save(action);
-        }
+        actionService.saveAction(action);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/changeAccountStatus/{name}")
-    public void changeAccountStatus(@PathVariable("name") String name) throws UserNotFoundException {
+    public ResponseEntity<Void> changeAccountStatus(@PathVariable("name") String name) throws UserNotFoundException {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var getUser = userService.getUserByUsername(name);
         User user = userMapper.UserDTOtoEntity(getUser);
@@ -126,15 +123,23 @@ public class AdministratorController {
                 .oldVersion(String.valueOf(getUser.isAccountNonLocked()))
                 .newVersion(String.valueOf(user.isAccountNonLocked()))
                 .build();
-        actionRepository.save(action);
+        actionService.saveAction(action);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/cancelAppointment/{id}")
-    public ResponseEntity<Void> cancelAppointment(@PathVariable("id") Long appointmentId) throws UserNotFoundException {
-        var appointmentToCancel = appointmentRepository.findById(appointmentId)
-                .orElseThrow(() -> new UserNotFoundException("Appointment not found"));
-        appointmentToCancel.setStatus(AppointmentStatus.CANCELLED);
-        appointmentRepository.save(appointmentToCancel);
+    public ResponseEntity<Void> cancelAppointment(@PathVariable("id") Long appointmentId) throws UserNotFoundException, AppointmentNotFoundException {
+        var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+       var appointment = appointmentService.getAppointmentById(appointmentId);
+        Action action = Action.builder()
+                .actionType(ActionType.MODIFY_ACCOUNT)
+                .createdBy(loggedAdmin.getId())
+                .createdDate(LocalDateTime.now(clock))
+                .fieldName("IsAccountNonLocked")
+                .oldVersion(appointment.getStatus().toString())
+                .newVersion("CANCELLED")
+                .build();
+        actionService.saveAction(action);
         return ResponseEntity.ok().build();
     }
 
@@ -146,8 +151,7 @@ public class AdministratorController {
     @GetMapping("/getActions")
     public List<Action> listAllActions() {
         User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var adminActions = actionRepository.findAll();
-        return adminActions.stream().filter(a -> a.getCreatedBy().equals(loggedUser.getId())).toList();
+        return actionService.getActions(loggedUser.getId());
     }
 
 

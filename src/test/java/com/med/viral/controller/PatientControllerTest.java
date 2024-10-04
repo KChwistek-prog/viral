@@ -112,7 +112,7 @@ class PatientControllerTest {
         mockMvc.perform(delete("/patient/deleteAppointment/" + appointment.getId())
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
         var updatedAppointment = appointmentRepository.findById(appointment.getId()).orElseThrow();
         Assertions.assertEquals(AppointmentStatus.CANCELLED, updatedAppointment.getStatus());
     }

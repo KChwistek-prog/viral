@@ -1,11 +1,11 @@
 package com.med.viral.controller;
 
+import com.med.viral.exceptions.AppointmentNotFoundException;
 import com.med.viral.model.Appointment;
 import com.med.viral.model.DTO.UserDTO;
 import com.med.viral.model.Doctor;
-import com.med.viral.repository.AppointmentRepository;
-import com.med.viral.service.UserService;
-import lombok.AllArgsConstructor;
+import com.med.viral.service.AppointmentService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,29 +17,28 @@ import java.util.Set;
 @RestController
 @RequestMapping("/doctor")
 @PreAuthorize("hasRole('DOCTOR')")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class DoctorController {
 
-    UserService userService;
-    AppointmentRepository appointmentRepository;
+    private final AppointmentService appointmentService;
 
     @GetMapping("/getPatients")
     public ResponseEntity<Set<UserDTO>> getPatientList() {
         var loggedDoc = (Doctor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(userService.getAllPatients(loggedDoc.getId()));
+        return ResponseEntity.ok(appointmentService.getAllPatients(loggedDoc.getId()));
     }
 
     @DeleteMapping("/deleteAppointment/{id}")
-    public void cancelAppointment(@PathVariable("id") Long id) {
-        appointmentRepository.delete(appointmentRepository.findById(id).orElseThrow());
+    public ResponseEntity<Void> cancelAppointment(@PathVariable("id") Long id) throws AppointmentNotFoundException {
+        var appointment = appointmentService.getAppointmentById(id);
+        appointmentService.cancelAppointment(appointment);
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/getAppointments")
     public ResponseEntity<List<Appointment>> getPatientsAppointments() {
         var loggedDoc = (Doctor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return ResponseEntity.ok(appointmentRepository.findAll().stream()
-                .filter(a -> a.getDoctor().getId().equals(loggedDoc.getId()))
-                .toList());
+        return ResponseEntity.ok(appointmentService.getAppointmentsByDoctor(loggedDoc.getId()));
     }
 
 }

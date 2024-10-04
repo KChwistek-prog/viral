@@ -109,7 +109,7 @@ class DoctorControllerTest {
 
         mockMvc.perform(delete("/doctor/deleteAppointment/" + appointment.getId())
                         .header("Authorization", "Bearer " + token))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.med.viral.security;
 
-import com.med.viral.service.CustomUserDetailService;
+import com.med.viral.service.serviceImpl.CustomUserDetailService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,15 +19,11 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final CustomUserDetailService customUserDetailService;
-
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, CustomUserDetailService customUserDetailService) {
-        this.jwtAuthFilter = jwtAuthFilter;
-        this.customUserDetailService = customUserDetailService;
-    }
 
     private static final String[] WHITE_LIST_URL = {
             "/v2/api-docs",

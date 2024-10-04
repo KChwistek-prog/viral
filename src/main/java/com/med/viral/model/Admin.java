@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+@ToString
 @Getter
 @Setter
 @RequiredArgsConstructor
@@ -34,8 +35,10 @@ public class Admin implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "admin")
+    @ToString.Exclude
     private List<Token> tokens;
     @OneToMany(mappedBy = "admin")
+    @ToString.Exclude
     private List<Action> actions;
     private boolean isAccountNonLocked;
 
@@ -47,20 +50,6 @@ public class Admin implements UserDetails {
     @Override
     public boolean isAccountNonLocked() {
         return this.isAccountNonLocked;
-    }
-
-    @Override
-    public String toString() {
-        return "Admin{" +
-                "id=" + id +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-                ", pesel=" + pesel +
-                ", role=" + role +
-                '}';
     }
 
     @Override

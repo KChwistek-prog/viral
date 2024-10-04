@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+@ToString
 @Getter
 @Setter
 @RequiredArgsConstructor
@@ -34,10 +35,12 @@ public class User implements UserDetails {
     private Integer pesel;
     private Short age;
     @OneToMany
+    @ToString.Exclude
     private List<Appointment> appointment;
     @Enumerated(EnumType.STRING)
     private Role role;
     @OneToMany(mappedBy = "user")
+    @ToString.Exclude
     private List<Token> tokens;
     private boolean isAccountNonLocked;
 
@@ -49,22 +52,6 @@ public class User implements UserDetails {
     @Override
     public boolean isAccountNonLocked() {
         return this.isAccountNonLocked;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", firstname='" + firstname + '\'' +
-                ", lastname='" + lastname + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-                ", pesel=" + pesel +
-                ", age=" + age +
-                ", role=" + role +
-                ", isAccountNonLocked=" + isAccountNonLocked +
-                '}';
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.springframework.data.annotation.CreatedDate;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@ToString
 @Setter
 @Getter
 @Builder
@@ -32,19 +33,6 @@ public class Action {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private Admin admin;
-
-    @Override
-    public String toString() {
-        return "Action{" +
-                "id=" + id +
-                ", createdBy=" + createdBy +
-                ", createdDate=" + createdDate +
-                ", actionType=" + actionType +
-                ", fieldName='" + fieldName + '\'' +
-                ", oldVersion='" + oldVersion + '\'' +
-                ", newVersion='" + newVersion + '\'' +
-                '}';
-    }
 
     @Override
     public final boolean equals(Object o) {

@@ -7,6 +7,7 @@ import org.hibernate.proxy.HibernateProxy;
 import java.util.Date;
 import java.util.Objects;
 
+@ToString
 @Setter
 @Getter
 @RequiredArgsConstructor
@@ -40,16 +41,5 @@ public class Appointment {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
-    }
-
-    @Override
-    public String toString() {
-        return "Appointment{" +
-                "id=" + id +
-                ", user=" + user +
-                ", doctor=" + doctor +
-                ", date=" + date +
-                ", status=" + status +
-                '}';
     }
 }

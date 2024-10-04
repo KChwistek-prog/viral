@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Objects;
 
+@ToString
 @Getter
 @Setter
 @Builder
@@ -30,24 +31,15 @@ public class Token {
     public boolean expired;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @ToString.Exclude
     public User user;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")
+    @ToString.Exclude
     private Admin admin;
     @ManyToOne
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;
-
-    @Override
-    public String toString() {
-        return "Token{" +
-                "id=" + id +
-                ", token='" + token + '\'' +
-                ", tokenType=" + tokenType +
-                ", revoked=" + revoked +
-                ", expired=" + expired +
-                '}';
-    }
 
     @Override
     public final boolean equals(Object o) {

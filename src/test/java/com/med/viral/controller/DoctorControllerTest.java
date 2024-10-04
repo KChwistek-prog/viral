@@ -1,16 +1,13 @@
 package com.med.viral.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.med.viral.model.Appointment;
-import com.med.viral.model.AppointmentStatus;
-import com.med.viral.model.Doctor;
-import com.med.viral.model.User;
+import com.med.viral.model.*;
 import com.med.viral.model.security.AuthenticationRequest;
 import com.med.viral.model.security.AuthenticationResponse;
 import com.med.viral.model.security.Role;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.repository.DoctorRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.repository.PatientRepository;
 import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +35,7 @@ class DoctorControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    UserRepository userRepository;
+    PatientRepository patientRepository;
 
     @Autowired
     DoctorRepository doctorRepository;
@@ -51,7 +48,7 @@ class DoctorControllerTest {
 
     @BeforeEach
     void setUp() {
-        Doctor doctor = new Doctor();
+        var doctor = new Doctor();
         doctor.setFirstname("John");
         doctor.setLastname("Smith");
         doctor.setUsername("doctor2");
@@ -60,18 +57,18 @@ class DoctorControllerTest {
         doctor.setAccountNonLocked(true);
         doctorRepository.save(doctor);
 
-        User patient = new User();
+        var patient = new Patient();
         patient.setFirstname("John");
         patient.setLastname("Doe");
         patient.setUsername("patient2");
         patient.setPassword(passwordEncoder.encode("1234"));
         patient.setRole(Role.PATIENT);
         patient.setAccountNonLocked(true);
-        userRepository.save(patient);
+        patientRepository.save(patient);
 
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctorRepository.findByUsername("doctor2").get());
-        appointment.setUser(userRepository.findByUsername("patient2").get());
+        appointment.setPatient(patientRepository.findByUsername("patient2").get());
         appointment.setDate(new Date());
         appointment.setStatus(AppointmentStatus.OPEN);
         appointmentRepository.save(appointment);
@@ -95,7 +92,7 @@ class DoctorControllerTest {
     void cancelAppointment() throws Exception {
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctorRepository.findByUsername("doctor2").get());
-        appointment.setUser(userRepository.findByUsername("patient2").get());
+        appointment.setPatient(patientRepository.findByUsername("patient2").get());
         appointment.setDate(new Date());
         appointment.setStatus(AppointmentStatus.OPEN);
         appointmentRepository.save(appointment);

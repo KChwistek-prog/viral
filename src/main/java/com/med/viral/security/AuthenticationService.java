@@ -6,7 +6,7 @@ import com.med.viral.exceptions.UsernameAlreadyExistsException;
 import com.med.viral.model.Admin;
 import com.med.viral.model.DTO.CreateAdminDTO;
 import com.med.viral.model.DTO.CreateDoctorDTO;
-import com.med.viral.model.DTO.CreateUserDTO;
+import com.med.viral.model.DTO.CreatePatientDTO;
 import com.med.viral.model.Doctor;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
@@ -14,11 +14,10 @@ import com.med.viral.model.security.*;
 import com.med.viral.repository.AdminRepository;
 import com.med.viral.repository.DoctorRepository;
 import com.med.viral.repository.TokenRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.repository.PatientRepository;
 import com.med.viral.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,7 +31,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 @Service
 public class AuthenticationService {
-    private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
     private final AdminRepository adminRepository;
     private final DoctorRepository doctorRepository;
     private final TokenRepository tokenRepository;
@@ -45,7 +44,7 @@ public class AuthenticationService {
     public AuthenticationResponse register(RegisterRequest request) {
         if (adminRepository.existsByUsername(request.username()) ||
                 doctorRepository.existsByUsername(request.username()) ||
-                userRepository.existsByUsername(request.username())) {
+                patientRepository.existsByUsername(request.username())) {
             throw new UsernameAlreadyExistsException("Username already exists.");
         }
         var claims = new HashMap<String, Object>();
@@ -76,8 +75,8 @@ public class AuthenticationService {
                         .build();
             }
             case PATIENT -> {
-                CreateUserDTO create = new CreateUserDTO(request.firstname(), request.lastname(), request.username(), passwordEncoder.encode(request.password()), request.role());
-                User userEntity = userRepository.save(userMapper.createUserDTOToEntity(create));
+                CreatePatientDTO create = new CreatePatientDTO(request.firstname(), request.lastname(), request.username(), passwordEncoder.encode(request.password()), request.role());
+                User userEntity = patientRepository.save(userMapper.createUserDTOToEntity(create));
                 userEntity.setAccountNonLocked(false);
                 claims.put("id", userEntity.getId());
                 var jwtToken = jwtService.generateToken(claims, userEntity);
@@ -96,7 +95,7 @@ public class AuthenticationService {
         authenticationManager.authenticate(userRequest);
         return switch (request.role()) {
             case PATIENT -> {
-                User user = userMapper.UserDTOtoEntity(userService.getUserByUsername(request.username()));
+                User user = userMapper.PatientDTOtoEntity(userService.getUserByUsername(request.username()));
                 var jwtToken = jwtService.generateToken(user);
                 var refreshToken = jwtService.generateRefreshToken(user);
                 revokeAllUserTokens(user);
@@ -208,7 +207,7 @@ public class AuthenticationService {
         refreshToken = authHeader.substring(7);
         userEmail = jwtService.extractUsername(refreshToken);
         if (userEmail != null) {
-            var user = userMapper.UserDTOtoEntity(this.userService.getByEmail(userEmail));
+            var user = userMapper.PatientDTOtoEntity(this.userService.getByEmail(userEmail));
             if (jwtService.isTokenValid(refreshToken, user)) {
                 var accessToken = jwtService.generateToken(user);
                 revokeAllUserTokens(user);

@@ -2,7 +2,7 @@ package com.med.viral.controller;
 
 import com.med.viral.exceptions.AppointmentNotFoundException;
 import com.med.viral.model.Appointment;
-import com.med.viral.model.DTO.UserDTO;
+import com.med.viral.model.DTO.PatientDTO;
 import com.med.viral.model.Doctor;
 import com.med.viral.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class DoctorController {
     private final AppointmentService appointmentService;
 
     @GetMapping("/getPatients")
-    public ResponseEntity<Set<UserDTO>> getPatientList() {
+    public ResponseEntity<Set<PatientDTO>> getPatientList() {
         var loggedDoc = (Doctor) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(appointmentService.getAllPatients(loggedDoc.getId()));
     }

@@ -1,17 +1,15 @@
 package com.med.viral.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.med.viral.model.Appointment;
-import com.med.viral.model.AppointmentStatus;
-import com.med.viral.model.Doctor;
-import com.med.viral.model.User;
+import com.med.viral.model.*;
 import com.med.viral.model.security.AuthenticationRequest;
 import com.med.viral.model.security.AuthenticationResponse;
 import com.med.viral.model.security.Role;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.repository.DoctorRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.repository.PatientRepository;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +39,7 @@ class PatientControllerTest {
     ObjectMapper objectMapper;
 
     @Autowired
-    UserRepository userRepository;
+    PatientRepository patientRepository;
 
     @Autowired
     DoctorRepository doctorRepository;
@@ -54,36 +52,46 @@ class PatientControllerTest {
 
     @BeforeEach
     void setup() {
-        User patient = new User();
+        var patient = new Patient();
         patient.setFirstname("John");
         patient.setLastname("Doe");
-        patient.setUsername("patient1");
+        patient.setUsername("patient3");
         patient.setPassword(passwordEncoder.encode("1234"));
         patient.setRole(Role.PATIENT);
+        patient.setEmail("johndoe4@example.com");
+        patient.setPesel(1234567890L);
         patient.setAccountNonLocked(true);
-        userRepository.save(patient);
+        patientRepository.save(patient);
 
-        Doctor doctor = new Doctor();
+        var doctor = new Doctor();
         doctor.setFirstname("James");
         doctor.setLastname("Smith");
-        doctor.setUsername("doctor1");
+        doctor.setUsername("doctor3");
         doctor.setPassword(passwordEncoder.encode("1234"));
         doctor.setRole(Role.DOCTOR);
+        doctor.setEmail("johndoe5@example.com");
+        doctor.setPesel(1234567890L);
         doctor.setAccountNonLocked(true);
         doctorRepository.save(doctor);
     }
 
+    @AfterEach
+    void cleanUp() {
+        appointmentRepository.deleteAll();
+        doctorRepository.deleteAll();
+        patientRepository.deleteAll();
+    }
     @Test
     void testAddAppointment() throws Exception {
         //given
-        var doctor = doctorRepository.findByUsername("doctor1");
-        var login = new AuthenticationRequest("patient1", "1234", Role.PATIENT);
+        var doctor = doctorRepository.findByUsername("doctor3");
+        var login = new AuthenticationRequest("patient3", "1234", Role.PATIENT);
         var loggedUser = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(login))).andReturn().getResponse().getContentAsString();
         var token = objectMapper.readValue(loggedUser, AuthenticationResponse.class).accessToken();
         //when
-        mockMvc.perform(post("/patient/addAppointment/" + doctor.orElseThrow().getId())
+        mockMvc.perform(post("/patient/addAppointment/" + doctor.orElseThrow().getId().toString())
                 .header("Authorization", "Bearer " + token)
                 .contentType(MediaType.APPLICATION_JSON));
         //then
@@ -94,16 +102,16 @@ class PatientControllerTest {
     @Test
     void testCancelAppointment() throws Exception {
         //given
-        var login = new AuthenticationRequest("patient1", "1234", Role.PATIENT);
+        var login = new AuthenticationRequest("patient3", "1234", Role.PATIENT);
         var loggedAdmin = mockMvc.perform(post("/auth/authenticate")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(login))).andReturn().getResponse().getContentAsString();
         var token = objectMapper.readValue(loggedAdmin, AuthenticationResponse.class).accessToken();
-        var doctor = doctorRepository.findByUsername("doctor1").orElseThrow();
-        var patient = userRepository.findByUsername("patient1").orElseThrow();
+        var doctor = doctorRepository.findByUsername("doctor3").orElseThrow();
+        var patient = patientRepository.findByUsername("patient3").orElseThrow();
         Appointment appointment = new Appointment();
         appointment.setDoctor(doctor);
-        appointment.setUser(patient);
+        appointment.setPatient(patient);
         appointment.setDate(new Date());
         appointment.setStatus(AppointmentStatus.OPEN);
         appointmentRepository.save(appointment);

@@ -2,15 +2,16 @@ package com.med.viral.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.med.viral.model.Admin;
+import com.med.viral.model.Patient;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.AuthenticationRequest;
 import com.med.viral.model.security.AuthenticationResponse;
 import com.med.viral.model.security.Role;
 import com.med.viral.repository.AdminRepository;
-import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.repository.TokenRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.repository.PatientRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class AdministratorControllerTest {
 
     @Autowired
@@ -35,7 +37,7 @@ class AdministratorControllerTest {
     AdminRepository adminRepository;
 
     @Autowired
-    UserRepository userRepository;
+    PatientRepository patientRepository;
 
     @Autowired
     TokenRepository tokenRepository;
@@ -57,41 +59,41 @@ class AdministratorControllerTest {
         admin.setUsername("admin1");
         admin.setPassword(passwordEncoder.encode("1234"));
         admin.setEmail("johndoe1@example.com");
-        admin.setPesel(1234567890);
+        admin.setPesel(1234567890L);
         admin.setRole(Role.ADMIN);
         admin.setAccountNonLocked(true);
         adminRepository.save(admin);
 
-        User user = new User();
+        var user = new Patient();
         user.setFirstname("John");
         user.setLastname("Doe");
         user.setUsername("user1");
         user.setPassword(passwordEncoder.encode("1234"));
-        user.setEmail("johndoe1@example.com");
-        user.setPesel(1234567890);
+        user.setEmail("johndoe2@example.com");
+        user.setPesel(1234567890L);
         user.setRole(Role.PATIENT);
         user.setAccountNonLocked(false);
-        userRepository.save(user);
+        patientRepository.save(user);
     }
 
     @AfterEach
     void cleanUp() {
         tokenRepository.deleteAll();
         adminRepository.deleteAll();
-        userRepository.deleteAll();
+        patientRepository.deleteAll();
     }
 
 
     @Test
     void addAccount() throws Exception {
         //given
-        User user = new User();
+        var user = new Patient();
         user.setFirstname("John");
         user.setLastname("Doe");
         user.setUsername("user3");
         user.setPassword(passwordEncoder.encode("1234"));
         user.setEmail("johndoe3@example.com");
-        user.setPesel(1234567890);
+        user.setPesel(1234567890L);
         user.setRole(Role.PATIENT);
         user.setAccountNonLocked(false);
         var login = new AuthenticationRequest("admin1", "1234", Role.ADMIN);
@@ -103,7 +105,7 @@ class AdministratorControllerTest {
         mockMvc.perform(put("/administrator/addAccount")
                         .header("Authorization", "Bearer " + token.accessToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userMapper.UserEntityToDTO(user))))
+                        .content(objectMapper.writeValueAsString(userMapper.PatientEntityToDTO(user))))
                 .andExpect(status().isOk());
     }
 
@@ -115,7 +117,7 @@ class AdministratorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(login))).andReturn().getResponse().getContentAsString();
         var token = objectMapper.readValue(loggedAdmin, AuthenticationResponse.class);
-        User userToDelete = userRepository.findByUsername("user1").orElseThrow();
+        User userToDelete = patientRepository.findByUsername("user1").orElseThrow();
         //when and then
         mockMvc.perform(delete("/administrator/deleteAccount/" + userToDelete.getId())
                         .header("Authorization", "Bearer " + token.accessToken())
@@ -126,7 +128,7 @@ class AdministratorControllerTest {
     @Test
     void editUserAccount() throws Exception {
         //given
-        var userEdit = new User();
+        var userEdit = new Patient();
         userEdit.setFirstname("John");
         userEdit.setLastname("Rambo");
         userEdit.setRole(Role.PATIENT);
@@ -135,12 +137,12 @@ class AdministratorControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(login))).andReturn().getResponse().getContentAsString();
         var token = objectMapper.readValue(loggedAdmin, AuthenticationResponse.class);
-        var userToModify = userRepository.findByUsername("user1").orElseThrow();
+        var userToModify = patientRepository.findByUsername("user1").orElseThrow();
         //when and then
         mockMvc.perform(patch("/administrator/updateUser/" + userToModify.getId())
                         .header("Authorization", "Bearer " + token.accessToken())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(userMapper.UserEntityToDTO(userEdit))))
+                        .content(objectMapper.writeValueAsString(userMapper.PatientEntityToDTO(userEdit))))
                 .andExpect(status().isOk());
     }
 

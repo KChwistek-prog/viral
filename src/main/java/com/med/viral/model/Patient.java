@@ -16,10 +16,10 @@ import java.util.List;
 @SuperBuilder
 @Entity
 @AllArgsConstructor
-@DiscriminatorValue("DOCTOR")
-public class Doctor extends User {
+@DiscriminatorValue("PATIENT")
+public class Patient extends User {
 
-    private String specialization;
+    private Short age;
 
     @OneToMany
     @ToString.Exclude

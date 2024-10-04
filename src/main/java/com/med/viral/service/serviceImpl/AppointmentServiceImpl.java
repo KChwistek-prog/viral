@@ -4,9 +4,9 @@ import com.med.viral.exceptions.AppointmentNotFoundException;
 import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Appointment;
 import com.med.viral.model.AppointmentStatus;
-import com.med.viral.model.DTO.UserDTO;
+import com.med.viral.model.DTO.PatientDTO;
 import com.med.viral.model.Doctor;
-import com.med.viral.model.User;
+import com.med.viral.model.Patient;
 import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.repository.AppointmentRepository;
 import com.med.viral.repository.DoctorRepository;
@@ -33,14 +33,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Appointment registerAppointment(User user, Integer doctorId) throws UserNotFoundException {
-        if (!user.isAccountNonLocked()) {
+    public Appointment registerAppointment(Patient patient, Integer doctorId) throws UserNotFoundException {
+        if (!patient.isAccountNonLocked()) {
             throw new UserNotFoundException("User Locked");
         }
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(() -> new UserNotFoundException("Doctor not found"));
         Appointment appointment = Appointment.builder()
-                .user(user)
+                .patient(patient)
                 .doctor(doctor)
                 .date(new Date())
                 .status(AppointmentStatus.OPEN)
@@ -56,11 +56,11 @@ public class AppointmentServiceImpl implements AppointmentService {
     }
 
     @Override
-    public Set<UserDTO> getAllPatients(Integer doctorId) {
+    public Set<PatientDTO> getAllPatients(Integer doctorId) {
         return appointmentRepository.findAll().stream()
                 .filter(a -> a.getDoctor().getId().equals(doctorId))
-                .map(Appointment::getUser)
-                .map(userMapper::UserEntityToDTO)
+                .map(Appointment::getPatient)
+                .map(userMapper::PatientEntityToDTO)
                 .collect(Collectors.toSet());
     }
 

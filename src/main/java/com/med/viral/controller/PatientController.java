@@ -3,7 +3,7 @@ package com.med.viral.controller;
 import com.med.viral.exceptions.AppointmentNotFoundException;
 import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Appointment;
-import com.med.viral.model.User;
+import com.med.viral.model.Patient;
 import com.med.viral.service.AppointmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class PatientController {
 
     @PostMapping("/addAppointment/{id}")
     public ResponseEntity<Appointment> addAppointment(@PathVariable("id") Integer docId) throws UserNotFoundException {
-        User loggedUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Patient loggedUser = (Patient) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return ResponseEntity.ok(appointmentService.registerAppointment(loggedUser, docId));
     }
 

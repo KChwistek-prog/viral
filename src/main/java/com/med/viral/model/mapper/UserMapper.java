@@ -3,7 +3,7 @@ package com.med.viral.model.mapper;
 import com.med.viral.model.Admin;
 import com.med.viral.model.DTO.*;
 import com.med.viral.model.Doctor;
-import com.med.viral.model.User;
+import com.med.viral.model.Patient;
 import org.mapstruct.*;
 
 @Mapper(componentModel = "spring",
@@ -11,14 +11,14 @@ import org.mapstruct.*;
         unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface UserMapper {
     @Mapping(source = "accountNonLocked", target = "isAccountNonLocked")
-    UserDTO UserEntityToDTO(User user);
+    PatientDTO PatientEntityToDTO(Patient patient);
 
-    @Mapping(source = "isAccountNonLocked", target = "isAccountNonLocked")
-    User UserDTOtoEntity(UserDTO userDTO);
+    @Mapping(source = "isAccountNonLocked", target = "accountNonLocked")
+    Patient PatientDTOtoEntity(PatientDTO patientDTO);
 
-    User createUserDTOToEntity(CreateUserDTO createUserDTO);
+    Patient createUserDTOToEntity(CreatePatientDTO createPatientDTO);
 
-    void updateUserFromDto(UserDTO dto, @MappingTarget User entity);
+    void updateUserFromDto(PatientDTO dto, @MappingTarget Patient entity);
 
     AdminDTO AdminEntityToDTO(Admin admin);
 

@@ -2,10 +2,10 @@ package com.med.viral.service.serviceImpl;
 
 import com.med.viral.model.Admin;
 import com.med.viral.model.Doctor;
-import com.med.viral.model.User;
+import com.med.viral.model.Patient;
 import com.med.viral.repository.AdminRepository;
 import com.med.viral.repository.DoctorRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -18,7 +18,7 @@ import java.util.Optional;
 public class CustomUserDetailService implements UserDetailsService {
 
     private final AdminRepository adminRepository;
-    private final UserRepository userRepository;
+    private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
 
     public UserDetails loadUserByUsername(String username) {
@@ -27,7 +27,7 @@ public class CustomUserDetailService implements UserDetailsService {
             return admin.get();
         }
 
-        Optional<User> user = userRepository.findByUsername(username);
+        Optional<Patient> user = patientRepository.findByUsername(username);
         if (user.isPresent()) {
             return user.get();
         }

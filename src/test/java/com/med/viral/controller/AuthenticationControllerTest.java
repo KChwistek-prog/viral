@@ -3,6 +3,7 @@ package com.med.viral.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.med.viral.model.Admin;
 import com.med.viral.model.Doctor;
+import com.med.viral.model.Patient;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.AuthenticationRequest;
@@ -10,7 +11,8 @@ import com.med.viral.model.security.RegisterRequest;
 import com.med.viral.model.security.Role;
 import com.med.viral.repository.AdminRepository;
 import com.med.viral.repository.DoctorRepository;
-import com.med.viral.repository.UserRepository;
+import com.med.viral.repository.PatientRepository;
+import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 class AuthenticationControllerTest {
 
     @Autowired
@@ -36,7 +39,7 @@ class AuthenticationControllerTest {
     DoctorRepository doctorRepository;
 
     @Autowired
-    UserRepository userRepository;
+    PatientRepository patientRepository;
 
     @Autowired
     ObjectMapper objectMapper;
@@ -73,19 +76,19 @@ class AuthenticationControllerTest {
     @Test
     public void testPatientAuthenticate() throws Exception {
         //given
-        User user = new User();
+        var user = new Patient();
         user.setFirstname("John");
         user.setLastname("Doe");
-        user.setUsername("user");
+        user.setUsername("patient");
         user.setPassword(passwordEncoder.encode("1234"));
         user.setEmail("johndoe@example.com");
-        user.setPesel(1234567890);
+        user.setPesel(1234567890L);
         user.setRole(Role.PATIENT);
         user.setAccountNonLocked(true);
-        userRepository.save(user);
+        patientRepository.save(user);
 
         //when and then
-        var login = new AuthenticationRequest("user", "1234", Role.PATIENT);
+        var login = new AuthenticationRequest("patient", "1234", Role.PATIENT);
         mockMvc.perform(post("/auth/authenticate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(login)))
@@ -95,13 +98,13 @@ class AuthenticationControllerTest {
     @Test
     public void testDoctorAuthenticate() throws Exception {
         //given
-        Doctor doctor = new Doctor();
+        var doctor = new Doctor();
         doctor.setFirstname("John");
         doctor.setLastname("Doe");
         doctor.setUsername("doctor");
         doctor.setPassword(passwordEncoder.encode("1234"));
-        doctor.setEmail("johndoe@example.com");
-        doctor.setPesel(1234567890);
+        doctor.setEmail("johndoe2@example.com");
+        doctor.setPesel(1234567890L);
         doctor.setRole(Role.DOCTOR);
         doctor.setAccountNonLocked(true);
         doctorRepository.save(doctor);
@@ -117,13 +120,13 @@ class AuthenticationControllerTest {
     @Test
     public void testAdminAuthenticate() throws Exception {
         //given
-        Admin admin = new Admin();
+        var admin = new Admin();
         admin.setFirstname("John");
         admin.setLastname("Doe");
         admin.setUsername("admin1");
         admin.setPassword(passwordEncoder.encode("1234"));
-        admin.setEmail("johndoe@example.com");
-        admin.setPesel(1234567890);
+        admin.setEmail("johndoe3@example.com");
+        admin.setPesel(1234567890L);
         admin.setRole(Role.ADMIN);
         admin.setAccountNonLocked(true);
         adminRepository.save(admin);

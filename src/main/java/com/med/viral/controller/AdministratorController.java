@@ -5,7 +5,7 @@ import com.med.viral.exceptions.UserNotFoundException;
 import com.med.viral.model.Action;
 import com.med.viral.model.ActionType;
 import com.med.viral.model.Admin;
-import com.med.viral.model.DTO.UserDTO;
+import com.med.viral.model.DTO.PatientDTO;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
 import com.med.viral.model.security.Role;
@@ -53,20 +53,20 @@ public class AdministratorController {
     }
 
     @PatchMapping("/updateUser/{userId}")
-    public ResponseEntity<UserDTO> editUserAccount(@PathVariable("userId") Integer id, @RequestBody UserDTO userDTO) throws UserNotFoundException {
+    public ResponseEntity<PatientDTO> editUserAccount(@PathVariable("userId") Integer id, @RequestBody PatientDTO patientDTO) throws UserNotFoundException {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var user = userService.getById(id);
         var action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
                 .createdBy(loggedAdmin.getId())
                 .createdDate(LocalDateTime.now(clock))
-                .fieldName(userDTO.toString())
+                .fieldName(patientDTO.toString())
                 .oldVersion("false")
-                .newVersion(userDTO.toString())
+                .newVersion(patientDTO.toString())
                 .build();
         if (!user.role().equals(Role.ADMIN)) {
-            userMapper.updateUserFromDto(userDTO, userMapper.UserDTOtoEntity(userDTO));
-            userService.saveUser(userDTO);
+            userMapper.updateUserFromDto(patientDTO, userMapper.PatientDTOtoEntity(patientDTO));
+            userService.saveUser(patientDTO);
             actionService.saveAction(action);
             return ResponseEntity.ok().build();
         }
@@ -74,8 +74,8 @@ public class AdministratorController {
     }
 
     @PutMapping("/addAccount")
-    public ResponseEntity<UserDTO> addAccount(@RequestBody UserDTO userDTO) {
-        var user = userMapper.UserDTOtoEntity(userDTO);
+    public ResponseEntity<PatientDTO> addAccount(@RequestBody PatientDTO patientDTO) {
+        var user = userMapper.PatientDTOtoEntity(patientDTO);
         user.setAccountNonLocked(true);
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var action = Action.builder()
@@ -87,7 +87,7 @@ public class AdministratorController {
                 .newVersion("true")
                 .build();
         actionService.saveAction(action);
-        return ResponseEntity.ok(userService.saveUser(userMapper.UserEntityToDTO(user)));
+        return ResponseEntity.ok(userService.saveUser(userMapper.PatientEntityToDTO(user)));
     }
 
     @PostMapping("/updateAppointmentStatus/{id}")
@@ -111,9 +111,9 @@ public class AdministratorController {
     public ResponseEntity<Void> changeAccountStatus(@PathVariable("name") String name) throws UserNotFoundException {
         var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var getUser = userService.getUserByUsername(name);
-        User user = userMapper.UserDTOtoEntity(getUser);
+        var user = userMapper.PatientDTOtoEntity(getUser);
         user.setAccountNonLocked(true);
-        userService.saveUser(userMapper.UserEntityToDTO(user));
+        userService.saveUser(userMapper.PatientEntityToDTO(user));
 
         Action action = Action.builder()
                 .actionType(ActionType.MODIFY_ACCOUNT)
@@ -144,7 +144,7 @@ public class AdministratorController {
     }
 
     @GetMapping("/userList")
-    public List<UserDTO> listAllUsers() {
+    public List<PatientDTO> listAllUsers() {
         return userService.getAllNonAdminUsers();
     }
 

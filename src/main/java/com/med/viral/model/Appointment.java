@@ -19,8 +19,8 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private  Long id;
     @ManyToOne
-    @JoinColumn(name = "user_id")
-    private  User user;
+    @JoinColumn(name = "patient_id")
+    private  Patient patient;
     @ManyToOne
     @JoinColumn(name = "doctor_id")
     private  Doctor doctor;

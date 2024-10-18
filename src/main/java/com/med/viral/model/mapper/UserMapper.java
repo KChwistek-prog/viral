@@ -18,6 +18,7 @@ public interface UserMapper {
 
     Patient createUserDTOToEntity(CreatePatientDTO createPatientDTO);
 
+    @Mapping(target = "id", ignore = true)
     void updateUserFromDto(PatientDTO dto, @MappingTarget Patient entity);
 
     AdminDTO AdminEntityToDTO(Admin admin);

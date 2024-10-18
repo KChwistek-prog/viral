@@ -8,7 +8,6 @@ import com.med.viral.model.Admin;
 import com.med.viral.model.DTO.PatientDTO;
 import com.med.viral.model.User;
 import com.med.viral.model.mapper.UserMapper;
-import com.med.viral.model.security.Role;
 import com.med.viral.service.ActionService;
 import com.med.viral.service.AppointmentService;
 import com.med.viral.service.UserService;
@@ -35,42 +34,13 @@ public class AdministratorController {
 
     @DeleteMapping("/deleteAccount/{id}")
     public ResponseEntity<Void> deleteUserAccount(@PathVariable("id") Integer userId) throws Exception {
-        var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var userToDelete = userService.getById(userId);
-        Action action = Action.builder()
-                .actionType(ActionType.DELETE_ACCOUNT)
-                .createdBy(loggedAdmin.getId())
-                .createdDate(LocalDateTime.now(clock))
-                .fieldName("User account")
-                .oldVersion(userToDelete.username())
-                .newVersion("Deleted")
-                .build();
-        if (!userToDelete.role().equals(Role.ADMIN)) {
-            userService.deleteUser(userToDelete);
-            actionService.saveAction(action);
-        } else throw new Exception("Can't delete administrator account");
+        userService.deleteUser(userId);
         return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/updateUser/{userId}")
-    public ResponseEntity<PatientDTO> editUserAccount(@PathVariable("userId") Integer id, @RequestBody PatientDTO patientDTO) throws UserNotFoundException {
-        var loggedAdmin = (Admin) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var user = userService.getById(id);
-        var action = Action.builder()
-                .actionType(ActionType.MODIFY_ACCOUNT)
-                .createdBy(loggedAdmin.getId())
-                .createdDate(LocalDateTime.now(clock))
-                .fieldName(patientDTO.toString())
-                .oldVersion("false")
-                .newVersion(patientDTO.toString())
-                .build();
-        if (!user.role().equals(Role.ADMIN)) {
-            userMapper.updateUserFromDto(patientDTO, userMapper.PatientDTOtoEntity(patientDTO));
-            userService.saveUser(patientDTO);
-            actionService.saveAction(action);
-            return ResponseEntity.ok().build();
-        }
-        return ResponseEntity.badRequest().build();
+    public ResponseEntity<PatientDTO> editUserAccount(@PathVariable("userId") Integer id, @RequestBody PatientDTO patientDTO) throws Exception {
+        return userService.editUser(id, patientDTO);
     }
 
     @PutMapping("/addAccount")
